@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cd src  && magento-cloud db:dump -y -d .docker/mysql/docker-entrypoint-initdb.d/

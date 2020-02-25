@@ -1,0 +1,33 @@
+#!/bin/bash
+
+cd src
+
+docker run -it  -v $(pwd):/app/ -v ~/.composer/:/root/.composer/ magento/magento-cloud-docker-php:7.3-cli-1.1 bash -c "composer install&&chown www. /app/"
+docker run -it  -v $(pwd):/app/ -v ~/.composer/:/root/.composer/ magento/magento-cloud-docker-php:7.3-cli-1.1 bash -c "composer update &&chown www. /app/"
+
+docker run -it  -v $(pwd):/app/ -v ~/.composer/:/root/.composer/ magento/magento-cloud-docker-php:7.3-cli-1.1 bash -c "./vendor/bin/ece-docker build:compose --mode=developer --sync-engine=docker-sync"
+#@see https://devdocs.magento.com/cloud/docker/docker-mode-developer.html
+
+#--sync-engine="docker-sync"
+
+docker-sync start
+
+#Create environment  
+docker-compose up -d
+
+#./mutagen.sh
+
+#Install magento in environment
+docker-compose run deploy cloud-deploy && docker-compose run deploy magento-command deploy:mode:set developer
+docker-compose run deploy cloud-post-deploy
+
+#Configure and connect varnish
+docker-compose run deploy magento-command config:set system/full_page_cache/caching_application 2 --lock-env
+docker-compose run deploy magento-command setup:config:set --http-cache-hosts=varnish
+
+#clear cache
+docker-compose run deploy magento-command cache:clean
+
+echo "Visit http://magento2.docker"
+
+

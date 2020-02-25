@@ -1,0 +1,21 @@
+version: '2'
+services:
+  db:
+    volumes:
+      - 'magento-db:/var/lib/mysql:delegated'
+      - '.docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:delegated'
+  varnish:
+    environment:
+      - VIRTUAL_HOST=magento2.docker
+  fpm:
+    volumes:
+      - 'magento-sync:/app:delegated'
+  build:
+    volumes:
+      - 'magento-sync:/app:delegated'
+  deploy:
+    volumes:
+      - 'magento-sync:/app:delegated'
+  web:
+    volumes:
+      - 'magento-sync:/app:delegated'
