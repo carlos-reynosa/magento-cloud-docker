@@ -476,6 +476,7 @@ elif [[ "${arg_m:?}" = "production" ]]; then
 
     info "Restart services"
     docker-compose restart
+    docker-compose up -d
 
 else
 
