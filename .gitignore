@@ -3,3 +3,4 @@
 !/.gitignore
 !/templates
 !/README.md
+bin/cloud/env.sh
