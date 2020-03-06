@@ -466,7 +466,7 @@ fi
 
   info "Dumping source database to local file: ${fileName}"
   magento-cloud db:dump  -e ${sourceEnvironment} ${projectOption}  -r  database --stdout \
-    | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | pv > ${fileName}
+    | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | pv -W > ${fileName}
 
   info "Import database dump into location environment"
   pv "${fileName}" | magento-cloud sql  --environment=${destinationEnvironment} ${projectOption}
