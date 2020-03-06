@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function PDP_PACKAGE::TEMPLATE_FUNCTION_NAME () {
+function magento () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -435,8 +435,8 @@ docker-compose run deploy magento-command "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f PDP_PACKAGE::TEMPLATE_FUNCTION_NAME
+  export -f magento
 else
-  PDP_PACKAGE::TEMPLATE_FUNCTION_NAME "${@}"
+  magento "${@}"
   exit ${?}
 fi
