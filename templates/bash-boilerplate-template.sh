@@ -141,7 +141,6 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -f --file  [arg] Filename to process. Required.
   -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
@@ -376,11 +375,7 @@ __b3bp_err_report() {
 
 # debug mode
 if [[ "${arg_d:?}" = "1" ]]; then
-  set -o xtrace
-  PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
   LOG_LEVEL="7"
-  # Enable error backtracing
-  trap '__b3bp_err_report "${FUNCNAME:-.}" ${LINENO}' ERR
 fi
 
 # verbose mode
@@ -403,24 +398,11 @@ fi
 ### Validation. Error out if the things required for your script are not present
 ##############################################################################
 
-[[ "${arg_f:-}" ]]     || help      "Setting a filename with -f or --file is required"
 [[ "${LOG_LEVEL:-}" ]] || emergency "Cannot continue without LOG_LEVEL. "
-[[ "${MAGENTO_INSTALL_PATH:-}" ]] && info "Magento Install Path: ${MAGENTO_INSTALL_PATH:-}" || emergency "Cannot continue without a magento install configured within the environment. "
-[[ -s "${MAGENTO_INSTALL_PATH:-}/index.php" ]] ||  emergency "No valid magento installation available at: ${MAGENTO_INSTALL_PATH:-}/index.php"
 
 ### Runtime
 ##############################################################################
 
-info "__i_am_main_script: ${__i_am_main_script}"
-info "__file: ${__file}"
-info "__dir: ${__dir}"
-info "__base: ${__base}"
-info "OSTYPE: ${OSTYPE}"
-
-info "arg_f: ${arg_f}"
-info "arg_d: ${arg_d}"
-info "arg_v: ${arg_v}"
-info "arg_h: ${arg_h}"
 
 # shellcheck disable=SC2015
 if [[ -n "${arg_i:-}" ]] && declare -p arg_i 2> /dev/null | grep -q '^declare \-a'; then
@@ -443,17 +425,6 @@ else
   info "arg_x: 0"
 fi
 
-info "$(echo -e "multiple lines example - line #1\\nmultiple lines example - line #2\\nimagine logging the output of 'ls -al /path/'")"
-
-# All of these go to STDERR, so you can use STDOUT for piping machine readable information to other software
-debug "Info useful to developers for debugging the application, not useful during operations."
-info "Normal operational messages - may be harvested for reporting, measuring throughput, etc. - no action required."
-notice "Events that are unusual but not error conditions - might be summarized in an email to developers or admins to spot potential problems - no immediate action required."
-warning "Warning messages, not an error, but indication that an error will occur if action is not taken, e.g. file system 85% full - each item must be resolved within a given time. This is a debug message"
-error "Non-urgent failures, these should be relayed to developers or admins; each item must be resolved within a given time."
-critical "Should be corrected immediately, but indicates failure in a primary system, an example is a loss of a backup ISP connection."
-alert "Should be corrected immediately, therefore notify staff who can fix the problem. An example would be the loss of a primary ISP connection."
-emergency "A \"panic\" condition usually affecting multiple apps/servers/sites. At this level it would usually notify all tech staff on call."
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
