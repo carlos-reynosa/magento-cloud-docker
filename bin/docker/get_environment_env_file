@@ -435,7 +435,7 @@ fi
 cd src
 notice "Overriding local env.php file from environment ${environment}"
 
-magento-cloud ssh --environment=${environment} "cat app/etc/env.php" | pv > app/etc/env.php
+magento-cloud ssh --environment=${environment} "cat app/etc/env.php" > app/etc/env.php
 
 warning "Remember to run bin/build-compose to include environment settings!!"
 }
