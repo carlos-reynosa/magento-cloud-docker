@@ -141,7 +141,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -e --source-environment [arg] Location from where to get the db dump. Required. Default="integration"
+  -e --source-environment [arg] Location from where to get the db dump.
   -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
@@ -425,18 +425,23 @@ elif [[ -n "${arg_x:-}" ]]; then
 else
   info "arg_x: 0"
 fi
+if [[ -n "${arg_e:-}" ]]; then
+  local environment="${arg_e}"
+else
+  notice "Using current source environment: $( cd src && git rev-parse --abbrev-ref HEAD)"
+  local environment=$( cd src && git rev-parse --abbrev-ref HEAD)
+fi
 
-local environment=${arg_e}
-local fileDir=.docker/mysql/docker-entrypoint-initdb.d/
-local fileName="${environment}-db.sql"
-local filePath=${fileDir}$fileName
+local fileDir=.docker/mysql/docker-entrypoint-initdb.d
+local fileName="environment-db-${environment}.sql"
+local filePath=${fileDir}/$fileName
 
-info "Remove old file dump ${filePath}"
-rm -rf ${filePath}
+info "Remove old file dumps in ${fileDir}/"
+rm -rf $fileDir/environment-db-*
 
 info "Downloading DB dump from ${environment} to ${filePath}"
-cd src  && magento-cloud db:dump --environment=${environment} -y  --stdout | pv > "${filePath}"
-
+cd src  && magento-cloud db:dump --environment=${environment} -y -r database  --stdout | pv > "${filePath}"
+ls -lah ${filePath}
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
