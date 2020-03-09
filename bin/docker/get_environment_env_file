@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function get_remote_env_file () {
+function get_environment_env_file () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -141,6 +141,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
+  -e --source-environment [arg] Location from where to get the db dump.
   -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
@@ -151,7 +152,9 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
-Overrides the local env.php file with that of a remote environment's.
+ This is Bash3 Boilerplate's help text. Feel free to add any description of your
+ program or elaborate more on command-line arguments. This section is not
+ parsed and will be added as-is to the help.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -373,11 +376,7 @@ __b3bp_err_report() {
 
 # debug mode
 if [[ "${arg_d:?}" = "1" ]]; then
-  set -o xtrace
-  PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
   LOG_LEVEL="7"
-  # Enable error backtracing
-  trap '__b3bp_err_report "${FUNCNAME:-.}" ${LINENO}' ERR
 fi
 
 # verbose mode
@@ -405,6 +404,7 @@ fi
 ### Runtime
 ##############################################################################
 
+
 # shellcheck disable=SC2015
 if [[ -n "${arg_i:-}" ]] && declare -p arg_i 2> /dev/null | grep -q '^declare \-a'; then
   info "arg_i:"
@@ -425,17 +425,24 @@ elif [[ -n "${arg_x:-}" ]]; then
 else
   info "arg_x: 0"
 fi
+if [[ -n "${arg_e:-}" ]]; then
+  local environment="${arg_e}"
+else
+  notice "Using current source environment: $( cd src && git rev-parse --abbrev-ref HEAD)"
+  local environment=$( cd src && git rev-parse --abbrev-ref HEAD)
+fi
 
 cd src
-local branchName=$(git rev-parse --abbrev-ref HEAD)
-notice "Overriding local env.php file from environment ${branchName}"
-magento-cloud ssh "cat app/etc/env.php" > app/etc/env.php
+notice "Overriding local env.php file from environment ${environment}"
+
+magento-cloud ssh --environment=${environment} "cat app/etc/env.php" | pv > app/etc/env.php
+
 warning "Remember to run bin/build-compose to include environment settings!!"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f get_remote_env_file
+  export -f get_environment_env_file
 else
-  get_remote_env_file "${@}"
+  get_environment_env_file "${@}"
   exit ${?}
 fi
