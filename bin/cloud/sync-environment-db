@@ -141,8 +141,8 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -s --source-environment [arg] Source environment to get the data from: production, staging. Required. Default="staging"
-  -l --destination-environment [arg] Place to import the data to: staging, integration. Required. Default="integration"
+  -s --source-environment [arg] Source environment to get the data from: production, staging. Default="staging"
+  -l --destination-environment [arg] Place to import the data to: staging, integration, etc. Production not allowed. Required. Default="integration"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -153,6 +153,17 @@ EOF
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
 Sync an environment DB with a source environment. Export the source db and import it into a destination environment.
+
+Required Environment Variables
+===============================
+ - MAGENTO_CLOUD_PROJECT_ID
+    * Should contain your Magento Cloud Project ID
+
+ - CLOUD_VARIABLE_NAME_FORCE_REDEPLOY
+    * Should contain the name of an existing cloud environment variable. This is use to update the variable and then force a full redeployment.
+
+You can define the bash variables within a ./env.sh file that is automatically included.
+
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -403,15 +414,6 @@ fi
 
 [[ "${LOG_LEVEL:-}" ]] || emergency "Cannot continue without LOG_LEVEL. "
 
-if [[ "${arg_s:-}" != "production" ]] && [[ "${arg_s:-}" != "staging" ]]; then
-   help "Using unsupported source value: ${arg_s}. Check valid values."
-fi
-
-if [[ "${arg_l:-}" != "staging" ]] && [[ "${arg_l:-}" != "integration" ]]; then
-   help "Using unsupported environment destination value: ${arg_s}. Check valid values."
-fi
-
-
 source ${__dir}/env.sh && notice "Loading environment file ${__dir}/env.php"
 
 #If defined used the environment project id, if not then ask for the id while commands run.
@@ -421,6 +423,15 @@ if [[ "${MAGENTO_CLOUD_PROJECT_ID:-}" ]]; then
     local projectId="${MAGENTO_CLOUD_PROJECT_ID}"
 else
   info "No Magento Cloud Project ID defined, will ask while running commands"
+fi
+
+#A cloud variable should existing within the environment that will allow us to force redeployment on an environment. We should know the variables name.
+if [[ "${CLOUD_VARIABLE_NAME_FORCE_REDEPLOY:-}" ]]; then
+  local redeployCloudVariableName=${CLOUD_VARIABLE_NAME_FORCE_REDEPLOY}
+  info "Cloud Variable Name: ${redeployCloudVariableName}"
+else
+   warning "A environment cloud variable is required in order to force full redeployment on an environment. The variable should already be defined within your environment."
+   help "A environment cloud variable is required in order to force full redeployment on an environment. The variable should already be defined within your environment."
 fi
 
 ### Runtime
@@ -448,51 +459,87 @@ else
   info "arg_x: 0"
 fi
 
+  #Setup where we get our db from
   local sourceEnvironment=${arg_s}
-  local destinationEnvironment=${arg_l}
+  debug "Source Environment: ${arg_s}"
 
-  local timestamp=`date '+%Y-%m-%d_%H-%M-%S'`;
-  local fileName="${sourceEnvironment}-db-${timestamp}.sql"
+  #Where the DB is being imported.
+  if [[ -n "${arg_l:-}" ]]; then
+    local destinationEnvironment=${arg_l}
+  else
+    local destEnv=$( cd src && git rev-parse --abbrev-ref HEAD)
+    local destinationEnvironment=${destEnv}
+  fi
+  debug "Destination Environment: ${destinationEnvironment}"
 
+  if [[ "${destinationEnvironment:-}" = "production" ]]; then
+     warning "Importing a database into a production environment is not allowed"
+     help "Importing a database into a production environment is not allowed"
+  fi
+
+  local fileName="${sourceEnvironment}-db.sql.gz"
+  debug "Filename: ${fileName}"
+
+  #Setup environment options
   if [[ "${projectId:-}" ]]; then
-    local projectOption="--project ${projectId}"
+    local projectOption="--project=${projectId}"
   else
     local projectOption=""
   fi
+  debug "Project option: ${projectOption}"
 
-  debug "Command project option: ${projectOption}"
+  if [[ "${sourceEnvironment:-}" ]]; then
+    local sourceOption="--environment=${sourceEnvironment}"
+  else
+    local sourceOption=""
+  fi
+  debug "Source option: ${sourceOption}"
 
-  notice "Syncing ${destinationEnvironment} DB with ${sourceEnvironment} DB"
+  if [[ "${destinationEnvironment:-}" ]]; then
+    local destinationOption="--environment=${destinationEnvironment}"
+  else
+    local destinationOption=""
+  fi
+  debug "Destination Option: ${destinationOption}"
+
+  info "Cloning ${sourceEnvironment} DB  into ${destinationEnvironment}"
+
+  #Create source dump file
+  rm ${fileName} > /dev/null 2>&1  && notice "Removed previous dump file ${fileName}" || notice "No previous dump file to remove"
 
   info "Dumping source database to local file: ${fileName}"
-  magento-cloud db:dump  -e ${sourceEnvironment} ${projectOption}  -r  database --stdout \
-    | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | pv -W > ${fileName}
+  magento-cloud db:dump  ${sourceOption} ${projectOption}  -r  database --stdout \
+    | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | gzip | pv -W  > ${fileName}
 
-  info "Import database dump into location environment"
-  pv "${fileName}" | magento-cloud sql  --environment=${destinationEnvironment} ${projectOption}
+  #Import source dump file into destination environment
+  info "Import database dump ${fileName} into ${destinationEnvironment} "
+  pv "${fileName}" | zcat  | magento-cloud sql  -r database  ${destinationOption} ${projectOption}
+
+ info "Flushing environment cache"
+  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
 
   info "Redeploying ${destinationEnvironment}"
-  magento-cloud redeploy  --environment=${destinationEnvironment} ${projectOption} --yes
+  local fullDeployVarValue=$RANDOM
 
-  info "Clearing image cache"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'rm -rf pub/media/catalog/product/cache/*'
+ info "Updated cloud variable ${redeployCloudVariableName}: ${fullDeployVarValue}"
+  magento-cloud variable:update --verbose ${destinationOption} ${projectOption} \
+  --value=${fullDeployVarValue} ${redeployCloudVariableName}
 
   info "Flushing environment cache"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction'
+  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
 
   info "Reindexing environment"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento indexer:reindex -v --no-interaction'
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento indexer:reindex catalogsearch_fulltext -v --no-interaction'
+  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento indexer:reindex -v --no-interaction' || emergency "Failed to reindex with error"
+  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento indexer:reindex catalogsearch_fulltext -v --no-interaction' ||  emergency "Failed to reindex elastic search"
 
   info "Flushing environment cache"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction'
+  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush magento cache"
 
   info "Creating dev admin account"
   magento-cloud ssh --environment=${destinationEnvironment} ${projectOption} \
-    'bin/magento admin:user:create -v --admin-user=admin --admin-password=admin123 --admin-email=admin@admintest123.com --admin-firstname=admin --admin-lastname=admin'
+    'bin/magento admin:user:create -v --admin-user=admin --admin-password=admin123 --admin-email=admin@admintest123.com --admin-firstname=admin --admin-lastname=admin' || emergency "Failed to create admin user"
 
-  info "Removing local temp db dump file ${fileName}"
-  rm ${fileName}
+  rm ${fileName} > /dev/null 2>&1  && notice "Cleaned dump file ${fileName}" || notice "No dump file to clean."
 
   notice "Visit site: $(magento-cloud url --pipe --primary --environment=${destinationEnvironment} ${projectOption})"
 
