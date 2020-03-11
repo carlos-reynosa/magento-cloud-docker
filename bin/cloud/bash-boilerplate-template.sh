@@ -400,6 +400,25 @@ fi
 
 [[ "${LOG_LEVEL:-}" ]] || emergency "Cannot continue without LOG_LEVEL. "
 
+source ${__dir}/env.sh && notice "Loading environment file ${__dir}/env.php"
+
+#If defined used the environment project id, if not then ask for the id while commands run.
+if [[ "${MAGENTO_CLOUD_PROJECT_ID:-}" ]]; then
+    info "Using environment Magento Cloud Project ID"
+    debug "Magento Cloud Project ID: ${MAGENTO_CLOUD_PROJECT_ID}"
+    local projectId="${MAGENTO_CLOUD_PROJECT_ID}"
+else
+  info "No Magento Cloud Project ID defined, will ask while running commands"
+fi
+
+#A cloud variable should existing within the environment that will allow us to force redeployment on an environment. We should know the variables name.
+if [[ "${CLOUD_VARIABLE_NAME_FORCE_REDEPLOY:-}" ]]; then
+  local redeployCloudVariableName=${CLOUD_VARIABLE_NAME_FORCE_REDEPLOY}
+  info "Cloud Variable Name: ${redeployCloudVariableName}"
+else
+   warning "A environment cloud variable is required in order to force full redeployment on an environment. The variable should already be defined within your environment."
+   help "A environment cloud variable is required in order to force full redeployment on an environment. The variable should already be defined within your environment."
+fi
 ### Runtime
 ##############################################################################
 
