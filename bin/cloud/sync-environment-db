@@ -516,7 +516,7 @@ fi
   pv "${fileName}" | zcat  | magento-cloud sql  -r database  ${destinationOption} ${projectOption}
 
  info "Flushing environment cache"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
+  magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
 
   info "Redeploying ${destinationEnvironment}"
   local fullDeployVarValue=$RANDOM
@@ -526,22 +526,22 @@ fi
   --value=${fullDeployVarValue} ${redeployCloudVariableName}
 
   info "Flushing environment cache"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
+  magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
 
   info "Reindexing environment"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento indexer:reindex -v --no-interaction' || emergency "Failed to reindex with error"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento indexer:reindex catalogsearch_fulltext -v --no-interaction' ||  emergency "Failed to reindex elastic search"
+  magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento indexer:reindex -v --no-interaction' || emergency "Failed to reindex with error"
+  magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento indexer:reindex catalogsearch_fulltext -v --no-interaction' ||  emergency "Failed to reindex elastic search"
 
   info "Flushing environment cache"
-  magento-cloud ssh  --environment=${destinationEnvironment} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush magento cache"
+  magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush magento cache"
 
   info "Creating dev admin account"
-  magento-cloud ssh --environment=${destinationEnvironment} ${projectOption} \
+  magento-cloud ssh ${destinationOption} ${projectOption} \
     'bin/magento admin:user:create -v --admin-user=admin --admin-password=admin123 --admin-email=admin@admintest123.com --admin-firstname=admin --admin-lastname=admin' || emergency "Failed to create admin user"
 
   rm ${fileName} > /dev/null 2>&1  && notice "Cleaned dump file ${fileName}" || notice "No dump file to clean."
 
-  notice "Visit site: $(magento-cloud url --pipe --primary --environment=${destinationEnvironment} ${projectOption})"
+  notice "Visit site: $(magento-cloud url --pipe --primary ${destinationOption} ${projectOption})"
 
 }
 
