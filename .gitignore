@@ -1,6 +1,6 @@
 /*
-!/bin
+!/bin/*
 !/.gitignore
 !/templates
 !/README.md
-bin/cloud/env.sh
+!bin/cloud/sync-environment-db
