@@ -442,11 +442,6 @@ fi
   local destinationEnvironment=${arg_e}
   debug "Destination Environment: ${destinationEnvironment}"
 
-  if [[ "${destinationEnvironment:-}" = "production" ]]; then
-     warning "Can't run migration on production environment."
-     help "Can't run migration on production environment."
-  fi
-
   if [[ "${destinationEnvironment:-}" ]]; then
     local destinationOption="--environment=${destinationEnvironment}"
   else
