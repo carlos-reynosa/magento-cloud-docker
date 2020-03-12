@@ -151,9 +151,18 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
- This is Bash3 Boilerplate's help text. Feel free to add any description of your
- program or elaborate more on command-line arguments. This section is not
- parsed and will be added as-is to the help.
+Script to bypass cached builds and force a full redeployment and building of an environment. The script
+uses a cloud variable by updating it to initiate a full redeployment.
+
+Required Environment Variables
+===============================
+ - MAGENTO_CLOUD_PROJECT_ID
+    * Should contain your Magento Cloud Project ID
+
+ - CLOUD_VARIABLE_NAME_FORCE_REDEPLOY
+    * Should contain the name of an existing cloud environment variable. This is use to update the variable and then force a full redeployment.
+
+You can define the bash variables within a ./env.sh file that is automatically included.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
