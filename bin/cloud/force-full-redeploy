@@ -452,9 +452,18 @@ fi
  #Update the cloud variable with any value
  local fullDeployVarValue=$RANDOM
 
+ info "Flushing ${destinationEnvironment} environment cache."
+ magento-cloud ssh  -q ${destinationOption} ${projectOption}  'bin/magento cache:flush -q --no-interaction' || emergency "Failed to flush cache"
+
   info "Forcing full redeployment of ${destinationEnvironment}"
+
   magento-cloud variable:update --verbose ${destinationOption} ${projectOption} \
   --value=${fullDeployVarValue} ${redeployCloudVariableName}
+
+  info "${destinationEnvironment} redeployment done."
+
+ info "Flushing ${destinationEnvironment} environment cache."
+ magento-cloud ssh -q ${destinationOption} ${projectOption}  'bin/magento cache:flush -q --no-interaction' || emergency "Failed to flush cache"
 
 }
 
