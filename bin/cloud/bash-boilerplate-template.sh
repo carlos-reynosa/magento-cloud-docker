@@ -141,7 +141,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
+  -e --environment Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="integration"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -154,6 +154,13 @@ EOF
  This is Bash3 Boilerplate's help text. Feel free to add any description of your
  program or elaborate more on command-line arguments. This section is not
  parsed and will be added as-is to the help.
+
+ Required Environment Variables
+===============================
+ - MAGENTO_CLOUD_PROJECT_ID
+    * Should contain your Magento Cloud Project ID
+
+You can define the bash variables within a ./env.sh file that is automatically included.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -411,38 +418,11 @@ else
   info "No Magento Cloud Project ID defined, will ask while running commands"
 fi
 
-#A cloud variable should existing within the environment that will allow us to force redeployment on an environment. We should know the variables name.
-if [[ "${CLOUD_VARIABLE_NAME_FORCE_REDEPLOY:-}" ]]; then
-  local redeployCloudVariableName=${CLOUD_VARIABLE_NAME_FORCE_REDEPLOY}
-  info "Cloud Variable Name: ${redeployCloudVariableName}"
-else
-   warning "A environment cloud variable is required in order to force full redeployment on an environment. The variable should already be defined within your environment."
-   help "A environment cloud variable is required in order to force full redeployment on an environment. The variable should already be defined within your environment."
-fi
+
 ### Runtime
 ##############################################################################
 
 
-# shellcheck disable=SC2015
-if [[ -n "${arg_i:-}" ]] && declare -p arg_i 2> /dev/null | grep -q '^declare \-a'; then
-  info "arg_i:"
-  for input_file in "${arg_i[@]}"; do
-    info " - ${input_file}"
-  done
-elif [[ -n "${arg_i:-}" ]]; then
-  info "arg_i: ${arg_i}"
-else
-  info "arg_i: 0"
-fi
-
-# shellcheck disable=SC2015
-if [[ -n "${arg_x:-}" ]] && declare -p arg_x 2> /dev/null | grep -q '^declare \-a'; then
-  info "arg_x: ${#arg_x[@]}"
-elif [[ -n "${arg_x:-}" ]]; then
-  info "arg_x: ${arg_x}"
-else
-  info "arg_x: 0"
-fi
 
 }
 
