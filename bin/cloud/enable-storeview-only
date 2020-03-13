@@ -141,7 +141,8 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -e --environment Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="integration"
+  -s --enabled-stores [arg] List of stores that should be enabled. Required.
+  -e --environment [arg] Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="integration"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -151,9 +152,8 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
- This is Bash3 Boilerplate's help text. Feel free to add any description of your
- program or elaborate more on command-line arguments. This section is not
- parsed and will be added as-is to the help.
+Disables all store views except for some defaults and those provided as an option. Helpful for when
+needing to reduce the number of store views to increase speed of dev deployments.
 
  Required Environment Variables
 ===============================
@@ -438,9 +438,40 @@ debug "Destination Option: ${environmentOption}"
 
 ### Runtime
 ##############################################################################
+OIFS=$IFS;
+IFS=",";
+
+local stores="admin,default,${arg_s}";
+local storesToEnable=($stores);
+
+IFS=$OIFS;
+
+info "Displaying all stores before disabling unused stores"
+magento-cloud sql -r database --raw ${environmentOption} ${projectOption} \
+ 'SELECT code FROM store WHERE is_active=1' | awk 'NR > 1' | awk '$0=" - "$0' | awk 'BEGIN{print "*******ENABLED STORES*******"}; {print}; END{print "***************"}'
+
+info "Disabling all stores"
+
+local disableSql="UPDATE store SET is_active=0"
+
+debug "Disable Stores SQL: ${disableSql}"
+
+magento-cloud sql ${environmentOption} ${projectOption}  "${disableSql}" || warning "An error occurred while disabling all stores."
+
+for ((i=0; i<${#storesToEnable[@]}; ++i)); do
+  info "Enabling Store Code: ${storesToEnable[$i]}";
+  local enableStoreSql="UPDATE store SET is_active=1 WHERE code='${storesToEnable[$i]}'"
+  debug "Enable Store SQL: ${enableStoreSql}"
+  magento-cloud sql ${environmentOption} ${projectOption} "${enableStoreSql}" || warning "An error while trying to enable store: ${storesToEnable[$i]}"
+done
 
 
+info "Displaying all stores after disabling unused stores"
+magento-cloud sql -r database --raw ${environmentOption} ${projectOption} \
+ 'SELECT code FROM store WHERE is_active=1' | awk 'NR > 1' | awk '$0=" - "$0' | awk 'BEGIN{print "*******ENABLED STORES*******"}; {print}; END{print "***************"}'
 
+info "Reindexing store after disabling and enabling stores"
+${__dir}/full-reindex -e ${environment}
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
