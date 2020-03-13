@@ -426,6 +426,16 @@ else
 fi
 debug "Project option: ${projectOption}"
 
+local environment=${arg_e}
+debug "Destination Environment: ${environment}"
+
+if [[ "${environment:-}" ]]; then
+  local environmentOption="--environment=${environment}"
+else
+  local environmentOption=""
+fi
+debug "Destination Option: ${environmentOption}"
+
 ### Runtime
 ##############################################################################
 
