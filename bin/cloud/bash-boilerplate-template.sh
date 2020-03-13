@@ -141,7 +141,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -e --environment Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="integration"
+  -e --environment [arg] Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="integration"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
