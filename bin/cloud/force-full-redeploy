@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function force-environment-full-redeploy () {
+function force-full-redeploy () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -459,8 +459,8 @@ fi
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f force-environment-full-redeploy
+  export -f force-full-redeploy
 else
-  force-environment-full-redeploy "${@}"
+  force-full-redeploy "${@}"
   exit ${?}
 fi
