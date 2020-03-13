@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function exec-environment-migration () {
+function exec-migration () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -473,8 +473,8 @@ magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento 
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f exec-environment-migration
+  export -f exec-migration
 else
-  exec-environment-migration "${@}"
+  exec-migration "${@}"
   exit ${?}
 fi
