@@ -516,10 +516,10 @@ fi
   pv "${fileName}" | zcat  | magento-cloud sql  -r database  ${destinationOption} ${projectOption}
 
  info "Flushing environment cache"
-  magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
+ magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
 
-  info "Redeploying ${destinationEnvironment}"
-  local fullDeployVarValue=$RANDOM
+ info "Redeploying ${destinationEnvironment}"
+ local fullDeployVarValue=$RANDOM
 
  info "Updated cloud variable ${redeployCloudVariableName}: ${fullDeployVarValue}"
   magento-cloud variable:update --verbose ${destinationOption} ${projectOption} \
