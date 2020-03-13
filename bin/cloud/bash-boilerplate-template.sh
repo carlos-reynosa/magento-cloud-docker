@@ -419,6 +419,13 @@ else
 fi
 
 
+if [[ "${projectId:-}" ]]; then
+  local projectOption="--project=${projectId}"
+else
+  local projectOption=""
+fi
+debug "Project option: ${projectOption}"
+
 ### Runtime
 ##############################################################################
 
