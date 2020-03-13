@@ -515,9 +515,6 @@ fi
   info "Import database dump ${fileName} into ${destinationEnvironment} "
   pv "${fileName}" | zcat  | magento-cloud sql  -r database  ${destinationOption} ${projectOption}
 
- info "Flushing environment cache"
- magento-cloud ssh  ${destinationOption} ${projectOption}  'bin/magento cache:flush --no-interaction' || emergency "Failed to flush cache"
-
   ${__dir}/force-full-redeploy -e ${destinationEnvironment}
   ${__dir}/full-reindex -e ${destinationEnvironment}
 
