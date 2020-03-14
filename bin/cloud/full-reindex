@@ -443,8 +443,12 @@ info "Flushing cache on ${destinationEnvironment} before reindexing"
 magento-cloud ssh ${environmentOption} ${projectOption} 'bin/magento  cache:flush'
 
 info "Starting reindex on ${destinationEnvironment}"
+
 magento-cloud ssh ${environmentOption} ${projectOption} 'bin/magento indexer:reindex' || emergency "An error occurred while reindexing ${destinationEnvironment}"
+
+info "Starting reindex catalog search"
 magento-cloud ssh ${environmentOption} ${projectOption} 'bin/magento indexer:reindex catalogsearch_fulltext' || emergency "An error occurred while running a catalog search reindex on ${destinationEnvironment}"
+
 info "Done reindexing"
 
 info "Flushing cache on ${destinationEnvironment} after reindexing"
