@@ -456,13 +456,13 @@ local disableSql="UPDATE store SET is_active=0"
 
 debug "Disable Stores SQL: ${disableSql}"
 
-magento-cloud sql ${environmentOption} ${projectOption}  "${disableSql}" || warning "An error occurred while disabling all stores."
+magento-cloud sql -r database ${environmentOption} ${projectOption}  "${disableSql}" || warning "An error occurred while disabling all stores."
 
 for ((i=0; i<${#storesToEnable[@]}; ++i)); do
   info "Enabling Store Code: ${storesToEnable[$i]}";
   local enableStoreSql="UPDATE store SET is_active=1 WHERE code='${storesToEnable[$i]}'"
   debug "Enable Store SQL: ${enableStoreSql}"
-  magento-cloud sql ${environmentOption} ${projectOption} "${enableStoreSql}" || warning "An error while trying to enable store: ${storesToEnable[$i]}"
+  magento-cloud sql -r database ${environmentOption} ${projectOption} "${enableStoreSql}" || warning "An error while trying to enable store: ${storesToEnable[$i]}"
 done
 
 
