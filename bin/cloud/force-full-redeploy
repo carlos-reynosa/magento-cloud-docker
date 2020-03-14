@@ -142,6 +142,7 @@ function help () {
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -e --environment [arg] The environment to redeploy: staging. Required. Default="staging"
+  -w --no-wait Enable flag to run deployment in the background.
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -413,8 +414,8 @@ source ${__dir}/env.sh && notice "Loading environment file ${__dir}/env.php"
 
 #If defined used the environment project id, if not then ask for the id while commands run.
 if [[ "${MAGENTO_CLOUD_PROJECT_ID:-}" ]]; then
-    info "Using environment Magento Cloud Project ID"
-    debug "Magento Cloud Project ID: ${MAGENTO_CLOUD_PROJECT_ID}"
+    notice "Using environment Magento Cloud Project ID"
+    info "Magento Cloud Project ID: ${MAGENTO_CLOUD_PROJECT_ID}"
     local projectId="${MAGENTO_CLOUD_PROJECT_ID}"
 else
   info "No Magento Cloud Project ID defined, will ask while running commands"
@@ -430,6 +431,14 @@ else
 fi
 ### Runtime
 ##############################################################################
+
+if [[ "${arg_w:?}" = "1" ]]; then
+  local waitOption='--no-wait'
+  debug "Enabled no wait option for variable deployment"
+else
+  local waitOption=''
+fi
+  debug "Wait Option: ${waitOption}"
 
   #The cloud project your using
   if [[ "${projectId:-}" ]]; then
@@ -455,15 +464,19 @@ fi
  info "Flushing ${destinationEnvironment} environment cache."
  magento-cloud ssh  -q ${destinationOption} ${projectOption}  'bin/magento cache:flush -q --no-interaction' || emergency "Failed to flush cache"
 
-  info "Forcing full redeployment of ${destinationEnvironment}"
+ notice "Forcing full redeployment of ${destinationEnvironment}"
 
-  magento-cloud variable:update --verbose ${destinationOption} ${projectOption} \
-  --value=${fullDeployVarValue} ${redeployCloudVariableName}
+ magento-cloud variable:update ${waitOption} --verbose ${destinationOption} ${projectOption} \
+ --value=${fullDeployVarValue} ${redeployCloudVariableName}
 
-  info "${destinationEnvironment} redeployment done."
+ notice "${destinationEnvironment} redeployment done."
 
+if [[ "${arg_w:?}" = "1" ]]; then
  info "Flushing ${destinationEnvironment} environment cache."
  magento-cloud ssh -q ${destinationOption} ${projectOption}  'bin/magento cache:flush -q --no-interaction' || emergency "Failed to flush cache"
+else
+  notice "Skipped flushing cache on ${destinationEnvironment} since deployment is pending. Flush manually after deployment."
+fi
 
 }
 
