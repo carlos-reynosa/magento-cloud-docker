@@ -142,7 +142,7 @@ function help () {
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -s --enabled-locales [arg] List of locales that should be configured. Required. Default="en_US"
-  -e --environment [arg] Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="integration"
+  -e --environment [arg] Cloud environment in which to initiate a reindex that includes catalog search reindex: integration, staging, production. Required. Default="staging"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -442,7 +442,7 @@ local locales="${arg_s}";
 local localesToEnable=($locales);
 
 
-notice "Configured locales:"
+info "Configured locales:"
 magento-cloud sql -r database --raw ${environmentOption} ${projectOption} \
  "SELECT value FROM core_config_data WHERE  path='general/locale/code'" | awk 'NR > 1' | awk '$0=" - "$0' | awk 'BEGIN{print "*******ENABLED locales*******"}; {print}; END{print "***************"}'
 
@@ -454,7 +454,7 @@ debug "Disable locale SQL: ${disableSql}"
 
 magento-cloud sql -r database ${environmentOption} ${projectOption}  "${disableSql}" || warning "An error occurred while removing configured locales."
 
-notice "Displaying remaining locales:"
+info "Displaying remaining locales:"
 magento-cloud sql -r database --raw ${environmentOption} ${projectOption} \
  "SELECT value FROM core_config_data WHERE path='general/locale/code'" | awk 'NR > 1' | awk '$0=" - "$0' | awk 'BEGIN{print "*******ENABLED locales*******"}; {print}; END{print "***************"}'
 
