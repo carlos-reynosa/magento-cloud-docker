@@ -452,23 +452,27 @@ fi
 debug "Destination Option: ${destinationEnvironmentOption}"
 
 #Migrate settings and data
-info "Starting migration process on ${destinationEnvironment}"
+info "Starting database migration process on ${destinationEnvironment}"
+
+notice "Using migration config file ${MIGRATION_CONFIGURATION}"
 
 info "Flushing environment cache"
 magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento cache:flush"
 
-info "Starting settings migration."
-magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento migrate:settings ${MIGRATION_CONFIGURATION}"  \
+info "Starting settings migration on ${destinationEnvironment} with config: ${MIGRATION_CONFIGURATION}."
+magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento migrate:settings -a -r ${MIGRATION_CONFIGURATION}"  \
     || emergency "An error occurred while running settings migration on ${destinationEnvironment}"
 info "Finished settings migration."
 
-info "Starting data migration."
-magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento migrate:data -a ${MIGRATION_CONFIGURATION}" \
+info "Starting data migration on ${destinationEnvironment} with config: ${MIGRATION_CONFIGURATION}"
+magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento migrate:data -a -r ${MIGRATION_CONFIGURATION}" \
     || emergency "An error occurred while running data migration on ${destinationEnvironment}"
 info "Finished data migration."
 
 info "Flushing environment cache"
 magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento cache:flush"
+
+warning "${destinationEnvironment} must be further configured after migration:\n\t - bin/cloud/force-full-redeploy -e ${destinationEnvironment} \n\t - bin/cloud/full-reindex -e ${destinationEnvironment}"
 
 }
 
