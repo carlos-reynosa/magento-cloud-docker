@@ -502,23 +502,24 @@ fi
   fi
   debug "Destination Option: ${destinationOption}"
 
-  info "Cloning ${sourceEnvironment} DB  into ${destinationEnvironment}"
+  notice "Cloning ${sourceEnvironment} DB  into ${destinationEnvironment}"
 
   #Create source dump file
-  rm ${fileName} > /dev/null 2>&1  && notice "Removed previous dump file ${fileName}" || notice "No previous dump file to remove"
+  rm ${fileName} > /dev/null 2>&1  && info "Removed previous dump file ${fileName}" || info "No previous dump file to remove"
 
-  info "Dumping source database to local file: ${fileName}"
+  notice "Dumping source database to local file: ${fileName}"
   magento-cloud db:dump  ${sourceOption} ${projectOption}  -r  database --stdout \
     | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | gzip | pv -W  > ${fileName}
 
+
   #Import source dump file into destination environment
-  info "Import database dump ${fileName} into ${destinationEnvironment} "
+  notice "Import database dump ${fileName} into ${destinationEnvironment} "
   pv "${fileName}" | zcat  | magento-cloud sql  -r database  ${destinationOption} ${projectOption}
 
   ${__dir}/force-full-redeploy -e ${destinationEnvironment}
   ${__dir}/full-reindex -e ${destinationEnvironment}
 
-  info "Creating dev admin account"
+  notice "Creating dev admin account"
   magento-cloud ssh ${destinationOption} ${projectOption} \
     'bin/magento admin:user:create -v --admin-user=admin --admin-password=admin123 --admin-email=admin@admintest123.com --admin-firstname=admin --admin-lastname=admin' || emergency "Failed to create admin user"
 
