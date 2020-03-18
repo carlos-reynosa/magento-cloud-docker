@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function get-latest-config () {
+function FUNCTION_NAME () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -444,8 +444,8 @@ debug "Destination Option: ${environmentOption}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f get-latest-config
+  export -f FUNCTION_NAME
 else
-  get-latest-config "${@}"
+  FUNCTION_NAME "${@}"
   exit ${?}
 fi
