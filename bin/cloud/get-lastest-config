@@ -151,9 +151,7 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
- This is Bash3 Boilerplate's help text. Feel free to add any description of your
- program or elaborate more on command-line arguments. This section is not
- parsed and will be added as-is to the help.
+Dumps the config within an environment and downloads it to the local source directory.
 
  Required Environment Variables
 ===============================
@@ -438,8 +436,12 @@ debug "Destination Option: ${environmentOption}"
 
 ### Runtime
 ##############################################################################
+info "Generating latest config.php file on ${environment}"
+magento-cloud ssh ${projectOption} ${environmentOption} "vendor/bin/ece-tools config:dump"
+info "Done generating config"
 
-
+info "Downloading config.php from ${environment} to local src/app/etc/config.php"
+magento-cloud ssh ${projectOption} ${environmentOption} "cat app/etc/config.php" > src/app/etc/config.php
 
 }
 
