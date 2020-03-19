@@ -403,6 +403,9 @@ fi
 ##############################################################################
 notice "Creating a local environment from ${arg_e}"
 
+info "Clear out all current docker containers and data"
+bin/docker/remove
+
 notice "Cleaning up previous docker configs"
 rm -f src/.docker/config.php && info "Removed docker config.php"
 rm -f src/docker-compose.override.yml && info "Removed docker compose override"
