@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function get-environment-env-file () {
+function get-env-file () {
 
 # Exit on error. Append "|| true" if you expect an error.
 set -o errexit
@@ -419,8 +419,8 @@ warning "Remember to run bin/build-compose to include environment settings!!"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f get-environment-env-file
+  export -f get-env-file
 else
-  get-environment-env-file "${@}"
+  get-env-file "${@}"
   exit ${?}
 fi
