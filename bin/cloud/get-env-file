@@ -411,7 +411,7 @@ else
 fi
 
 cd src
-notice "Overriding local env.php file from environment ${environment}"
+notice "Overriding local env.php file from environment ${environment} to epp/etc/env.php"
 
 magento-cloud ssh --environment=${environment} "cat app/etc/env.php" > app/etc/env.php
 
