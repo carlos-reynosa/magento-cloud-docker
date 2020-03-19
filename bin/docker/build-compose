@@ -143,7 +143,6 @@ function help () {
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -m --mode [arg] developer or production. Required. Default="production"
   -s --sync-mode [arg] How to sync with container: docker-sync, mutagen, native (default).  Required. Default="native"
-  -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -377,11 +376,7 @@ __b3bp_err_report() {
 
 # debug mode
 if [[ "${arg_d:?}" = "1" ]]; then
-  set -o xtrace
-  PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
   LOG_LEVEL="7"
-  # Enable error backtracing
-  trap '__b3bp_err_report "${FUNCNAME:-.}" ${LINENO}' ERR
 fi
 
 # verbose mode
@@ -409,26 +404,6 @@ fi
 ### Runtime
 ##############################################################################
 
-# shellcheck disable=SC2015
-if [[ -n "${arg_i:-}" ]] && declare -p arg_i 2> /dev/null | grep -q '^declare \-a'; then
-  info "arg_i:"
-  for input_file in "${arg_i[@]}"; do
-    info " - ${input_file}"
-  done
-elif [[ -n "${arg_i:-}" ]]; then
-  info "arg_i: ${arg_i}"
-else
-  info "arg_i: 0"
-fi
-
-# shellcheck disable=SC2015
-if [[ -n "${arg_x:-}" ]] && declare -p arg_x 2> /dev/null | grep -q '^declare \-a'; then
-  info "arg_x: ${#arg_x[@]}"
-elif [[ -n "${arg_x:-}" ]]; then
-  info "arg_x: ${arg_x}"
-else
-  info "arg_x: 0"
-fi
 
 [[ "${arg_m:-}" = "production" || "${arg_m:-}" = "developer"  ]] || emergency "Invalid deployment mode provided. Failed to build docker config. Use: production, developer "
 [[ "${arg_s:-}" = "native" || "${arg_s:-}" = "docker-sync" || "${arg_s:-}" = "mutagen" ]] || emergency "Invalid sync strategy provided. Failed to build docker config. Use: native, docker-sync, mutagen"
