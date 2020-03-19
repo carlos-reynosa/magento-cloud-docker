@@ -419,17 +419,7 @@ sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php
 
 notice "2. Setup up hostname in docker compose config"
 
-local dockerOverrideFilePath="src/docker-compose.override.yml"
-
-if [[ "${arg_m:?}" = "development" ]]; then
-  info "Initializing development docker compose override."
-  cp templates/docker-compose.override.yml.development.dist  ${dockerOverrideFilePath} \
-   || error "Error while trying to copy the override template in order to set up docker compose config hostname"
-else
-  info "Initializing production docker compose override."
-  cp templates/docker-compose.override.yml.production.dist  ${dockerOverrideFilePath} \
-   || error "Error while trying to copy the override template in order to set up docker compose config hostname"
-fi
+${__dir}/setup-docker-compose-override --mode ${arg_m}
 
 info "Updating domain in docker compose file"
 sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.yml
