@@ -142,10 +142,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -o --old-domain [arg] Old domain. Required. Default="magento2.docker"
-  -w --new-domain [arg] Old domain. Required.
   -m --mode [arg] development or production. Required. Default="production"
-  -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -155,7 +152,7 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
-Configure docker config files to spin up application with a specific host name.
+Build a docker compose optimized for production or development that uses delegated mounts.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -404,41 +401,16 @@ fi
 
 ### Runtime
 ##############################################################################
-
-notice "1. Setup up src/.docker/config.php hostname."
-if [[ -s "src/.docker/config.php" ]]; then
-    info "Using existing docker config.php file."
-else
-    info "src/.docker/config.php file is missing. Using template. "
-    cp src/.docker/config.php.dist  src/.docker/config.php
-fi
-
-info "Updating docker config"
-sed -i -e "s/http:\/\/${arg_o}\//http:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up http hostname in config.php file"
-sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up https hostname in config.php file"
-
-notice "2. Setup up hostname in docker compose config"
-
 local dockerOverrideFilePath="src/docker-compose.override.yml"
-
+notice "Initializing docker compose override."
 if [[ "${arg_m:?}" = "development" ]]; then
-  info "Initializing development docker compose override."
   cp templates/docker-compose.override.yml.development.dist  ${dockerOverrideFilePath} \
    || error "Error while trying to copy the override template in order to set up docker compose config hostname"
 else
-  info "Initializing production docker compose override."
   cp templates/docker-compose.override.yml.production.dist  ${dockerOverrideFilePath} \
    || error "Error while trying to copy the override template in order to set up docker compose config hostname"
 fi
-
-info "Updating domain in docker compose file"
-sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.yml
-
-info "Updating domain in docker composer override file"
-sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.override.yml
-
-notice "3. Adding new domain ${arg_w} to hosts file"
-echo "127.0.0.1 ::1 ${arg_w}" | sudo tee -a /etc/hosts
+notice "Done initializing docker compose override."
 
 }
 
