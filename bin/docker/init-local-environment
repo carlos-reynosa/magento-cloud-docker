@@ -402,8 +402,14 @@ fi
 ##############################################################################
 notice "Creating a local environment from ${arg_e}"
 
-info "Downloading a copy of ${arg_e} DB"
+info "Download a copy of ${arg_e} DB"
 bin/cloud/get-db -e ${arg_e}
+
+info "Download the latest copy of the config.php file"
+bin/cloud/get-latest-config -e ${arg_e}
+
+info "Download the latest copy of the env.php file"
+bin/cloud/get-env-file -e ${arg_e}
 
 notice "Done Creating a local environment from ${arg_e}"
 }
