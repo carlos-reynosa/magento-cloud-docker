@@ -142,6 +142,7 @@ function help () {
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -e --environment [arg] Environment from which to create a local site from. Required. Default="integration"
+  -m --mode [arg] Mode in which to initialize the local environment in: production, developer. Required. Default="production"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -403,13 +404,16 @@ fi
 notice "Creating a local environment from ${arg_e}"
 
 info "Download a copy of ${arg_e} DB"
-bin/cloud/get-db -e ${arg_e}
+bin/cloud/get-db --environment ${arg_e}
 
 info "Download the latest copy of the config.php file"
-bin/cloud/get-latest-config -e ${arg_e}
+bin/cloud/get-latest-config --environment ${arg_e}
 
 info "Download the latest copy of the env.php file"
-bin/cloud/get-env-file -e ${arg_e}
+bin/cloud/get-env-file --environment ${arg_e}
+
+info "Building compose file in ${arg_m} mode"
+bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
 
 notice "Done Creating a local environment from ${arg_e}"
 }
