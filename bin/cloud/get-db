@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function get-environment-db () {
+function get-db () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -421,8 +421,8 @@ ls -lah ${filePath}
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f get-environment-db
+  export -f get-db
 else
-  get-environment-db "${@}"
+  get-db "${@}"
   exit ${?}
 fi
