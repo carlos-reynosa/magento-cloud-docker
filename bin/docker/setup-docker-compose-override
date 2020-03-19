@@ -410,7 +410,9 @@ else
   cp templates/docker-compose.override.yml.production.dist  ${dockerOverrideFilePath} \
    || error "Error while trying to copy the override template in order to set up docker compose config hostname"
 fi
+
 notice "Done initializing docker compose override."
+notice "${dockerOverrideFilePath} was created or overridden."
 
 }
 
