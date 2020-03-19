@@ -141,7 +141,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -e --environment Environment from which to create a local site from. Required. Default="integration"
+  -e --environment [arg] Environment from which to create a local site from. Required. Default="integration"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -401,6 +401,9 @@ fi
 ### Runtime
 ##############################################################################
 notice "Creating a local environment from ${arg_e}"
+
+info "Downloading a copy of ${arg_e} DB"
+bin/cloud/get-db -e ${arg_e}
 
 notice "Done Creating a local environment from ${arg_e}"
 }
