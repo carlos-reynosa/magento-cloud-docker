@@ -15,7 +15,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function get-environment-latest-config () {
+function get-latest-config () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -446,8 +446,8 @@ magento-cloud ssh ${projectOption} ${environmentOption} "cat app/etc/config.php"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f get-environment-latest-config
+  export -f get-latest-config
 else
-  get-environment-latest-config "${@}"
+  get-latest-config "${@}"
   exit ${?}
 fi
