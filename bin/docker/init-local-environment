@@ -403,6 +403,10 @@ fi
 ##############################################################################
 notice "Creating a local environment from ${arg_e}"
 
+notice "Cleaning up previous docker configs"
+rm -f src/.docker/config.php && info "Removed docker config.php"
+rm -f src/docker-compose.override.yml && info "Removed docker compose override"
+
 info "Download a copy of ${arg_e} DB"
 bin/cloud/get-db --environment ${arg_e}
 
