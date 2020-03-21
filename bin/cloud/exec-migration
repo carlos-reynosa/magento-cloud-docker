@@ -472,7 +472,7 @@ info "Finished data migration."
 info "Flushing environment cache"
 magento-cloud ssh ${destinationEnvironmentOption} ${projectOption} "bin/magento cache:flush"
 
-warning "${destinationEnvironment} must be further configured after migration:\n\t - bin/cloud/force-full-redeploy -e ${destinationEnvironment} \n\t - bin/cloud/full-reindex -e ${destinationEnvironment}"
+warning "${destinationEnvironment} must be further configured after migration:\n\t - bin/cloud/force-full-redeploy -e ${destinationEnvironment} \n\t - bin/cloud/full-reindex -e ${destinationEnvironment} \n\t bin/cloud/enable-local-only -e ${destinationEnvironment}"
 
 }
 
