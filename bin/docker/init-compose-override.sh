@@ -141,7 +141,6 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -151,9 +150,7 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
- This is Bash3 Boilerplate's help text. Feel free to add any description of your
- program or elaborate more on command-line arguments. This section is not
- parsed and will be added as-is to the help.
+Initialize a default composer override file.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -402,28 +399,6 @@ fi
 
 ### Runtime
 ##############################################################################
-
-
-# shellcheck disable=SC2015
-if [[ -n "${arg_i:-}" ]] && declare -p arg_i 2> /dev/null | grep -q '^declare \-a'; then
-  info "arg_i:"
-  for input_file in "${arg_i[@]}"; do
-    info " - ${input_file}"
-  done
-elif [[ -n "${arg_i:-}" ]]; then
-  info "arg_i: ${arg_i}"
-else
-  info "arg_i: 0"
-fi
-
-# shellcheck disable=SC2015
-if [[ -n "${arg_x:-}" ]] && declare -p arg_x 2> /dev/null | grep -q '^declare \-a'; then
-  info "arg_x: ${#arg_x[@]}"
-elif [[ -n "${arg_x:-}" ]]; then
-  info "arg_x: ${arg_x}"
-else
-  info "arg_x: 0"
-fi
 
 }
 
