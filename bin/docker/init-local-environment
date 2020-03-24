@@ -409,12 +409,16 @@ notice "Creating a local environment from ${arg_e}"
 info "Clear out all current docker containers and data"
 bin/docker/remove
 
-notice "Cleaning up previous docker configs"
+info "Cleaning up files"
+info "Removing docker configs"
 rm -f src/.docker/config.php && info "Removed docker config.php"
 rm -f src/docker-compose.override.yml && info "Removed docker compose override"
 
+info "Making sure previous db dumps are cleared"
+rm -rf src/.docker/mysql/docker-entrypoint-initdb.d/*.sql
+
 info "Download a copy of ${arg_e} DB"
-bin/cloud/get-db --environment ${arg_e}
+bin/cloud/get-db --source-environment ${arg_e}
 
 info "Download the latest copy of the config.php file"
 bin/cloud/get-latest-config --environment ${arg_e}
@@ -423,7 +427,7 @@ info "Building compose file in ${arg_m} mode"
 bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
 info "Done building compose file in ${arg_m} mode"
 
-info "Download the latest copy of the env.php file"
+info "Download the latest copy of the env.php filegenerated/code/Magento/Braintree/Model/Adminhtml/System/Config/CountryCreditCard/Interceptor.php"
 bin/cloud/get-env-file --environment ${arg_e}
 info "Done downloading ${arg_e} env.php file to app/etc/env.php"
 
