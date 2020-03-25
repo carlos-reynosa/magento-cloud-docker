@@ -448,6 +448,7 @@ rm -f src/docker-compose.override.yml && info "Removed docker compose override"
 info "Making sure previous db dumps are cleared"
 rm -rf src/.docker/mysql/docker-entrypoint-initdb.d/*.sql
 
+notice "Setting up local config files"
 info "Download the latest copy of the config.php file from ${arg_e}"
 bin/cloud/get-latest-config --environment ${arg_e}
 
@@ -459,6 +460,9 @@ info "Download the latest copy of the env.php filegenerated/code/Magento/Braintr
 bin/cloud/get-env-file --environment ${arg_e}
 info "Done downloading ${arg_e} env.php file to app/etc/env.php"
 
+notice "Done setting up local config files"
+
+notice "Starting local environment init process"
 info "Running initial ${arg_m} deployment"
 bin/docker/deploy --mode ${arg_m}
 info "Finished initial ${arg_m} deployment"
@@ -475,6 +479,8 @@ info "Done reindexing"
 info "Flushing the cache"
 bin/docker/magento cache:flush
 info "Done flushing cache"
+
+notice "Done local environment init process"
 
 debug "Environment: ${arg_e}"
 debug "Mode: ${arg_m}"
