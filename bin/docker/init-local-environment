@@ -453,7 +453,9 @@ notice "Setting up local config files"
 info "Download the latest copy of the config.php file from ${arg_e}"
 bin/cloud/get-latest-config --environment ${arg_e}
 
+info "Setting up compose override file"
 bin/docker/setup-docker-compose-override --mode ${arg_m}
+info "Done setting up compose override file"
 
 info "Building compose file in ${arg_m} mode"
 bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
