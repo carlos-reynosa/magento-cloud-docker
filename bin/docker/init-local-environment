@@ -429,7 +429,7 @@ notice "Creating a local environment from ${arg_e}"
     debug "Dump file count: ${count}"
 
     if [[ ${count} = 0 ]]; then
-      emergency "No DB dump files in ${dumpPath}. A local environment cant be initialized using cached method."
+      emergency "No DB dump files in ${dumpPath}. A local environment cant be initialized using cached method. Use -p option to bypass the cache requirement."
     fi
     if [[ ${count} > 1 ]]; then
       emergency "There should only be one dump file in ${dumpPath}"
@@ -439,7 +439,7 @@ notice "Creating a local environment from ${arg_e}"
     local environmentDumpFileCount=${#allEnvironmentDumpFiles[@]}
 
     if [[ ${environmentDumpFileCount} = 0 ]]; then
-      emergency "You must have at least one dump file with a file name containing the environment name '${arg_e}'."
+      emergency "You must have at least one dump file with a file name containing the environment name '${arg_e}'. Use -p option to bypass the cache requirement."
     fi
 
     info "Using cached db dump in ${dumpPath}"
@@ -448,16 +448,13 @@ notice "Creating a local environment from ${arg_e}"
 notice "Cleaning local environment of old files and data"
 info "Cleaning local data"
 info "Clear out all current docker containers and data"
-bin/docker/remove
+bin/docker/remove || warning "An error occured while removing all data containers"
 
 info "Cleaning up files"
 
 info "Removing docker configs"
 rm -f src/.docker/config.php && info "Removed docker config.php"
 rm -f src/docker-compose.override.yml && info "Removed docker compose override"
-
-info "Making sure previous db dumps are cleared"
-rm -rf src/.docker/mysql/docker-entrypoint-initdb.d/*.sql
 
 notice "Setting up local config files"
 info "Download the latest copy of the config.php file from ${arg_e}"
