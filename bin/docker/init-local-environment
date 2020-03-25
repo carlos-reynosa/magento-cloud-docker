@@ -436,7 +436,7 @@ else
 fi
 
 notice "Cleaning local environment of old files and data"
-info "Cleaning data"
+info "Cleaning local data"
 info "Clear out all current docker containers and data"
 bin/docker/remove
 
