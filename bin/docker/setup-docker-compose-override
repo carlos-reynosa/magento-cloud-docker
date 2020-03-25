@@ -402,6 +402,8 @@ fi
 ### Runtime
 ##############################################################################
 local dockerOverrideFilePath="src/docker-compose.override.yml"
+rm -rf ${dockerOverrideFilePath} && info "Removed out old override file"
+
 notice "Initializing docker compose override."
 if [[ "${arg_m:?}" = "developer" ]]; then
   cp templates/docker-compose.override.yml.developer.dist  ${dockerOverrideFilePath} \
