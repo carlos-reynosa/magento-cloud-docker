@@ -143,6 +143,7 @@ function help () {
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -e --environment [arg] Environment from which to create a local site from. Required. Default="integration"
   -m --mode [arg] Mode in which to initialize the local environment in: production, developer. Required. Default="production"
+  -c --use-cached-db Toggles if the script should download a fresh db dump or used the existing cached db.
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -393,6 +394,10 @@ if [[ "${arg_h:?}" = "1" ]]; then
   help "Help using ${0}"
 fi
 
+debug "Environment: ${arg_e}"
+debug "Mode: ${arg_m}"
+debug "Use cached db: ${arg_c}"
+
 ##Setup Source Directory to Magento project files
 local RELATIVE_SRC_PATH="../../src"
 local SRC_DIR=$(cd ${__dir}/${RELATIVE_SRC_PATH} && pwd || emergency "Source path does not exist: ${__dir}/${RELATIVE_SRC_PATH}")
@@ -421,10 +426,28 @@ rm -f src/docker-compose.override.yml && info "Removed docker compose override"
 info "Making sure previous db dumps are cleared"
 rm -rf src/.docker/mysql/docker-entrypoint-initdb.d/*.sql
 
-info "Download a copy of ${arg_e} DB"
-bin/cloud/get-db --source-environment ${arg_e}
 
-info "Download the latest copy of the config.php file"
+#Check that there is actually a DB dump file available.
+if [[ "${arg_c}" = "1" ]]; then
+    local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
+    local files=($(find ${dumpPath}/ -maxdepth 1 -name "*.sql"))
+    local count=${#files[@]}
+    debug "Dump file path: ${dumpPath}"
+    debug "Dump file count: ${count}"
+
+    if [[ ${count} = 0 ]]; then
+      emergency "No DB dump files in ${dumpPath}. A local environment cant be initialized using cached method."
+    fi
+    if [[ ${count} > 1 ]]; then
+      emergency "There should only be one dump file in ${dumpPath}"
+    fi
+    info "Using cached db dump"
+else
+    info "Download a copy of ${arg_e} DB"
+    bin/cloud/get-db --source-environment ${arg_e}
+fi
+
+info "Download the latest copy of the config.php file from ${arg_e}"
 bin/cloud/get-latest-config --environment ${arg_e}
 
 info "Building compose file in ${arg_m} mode"
