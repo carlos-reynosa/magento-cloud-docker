@@ -143,7 +143,7 @@ function help () {
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -e --environment [arg] Environment from which to create a local site from. Required. Default="integration"
   -m --mode [arg] Mode in which to initialize the local environment in: production, developer. Required. Default="production"
-  -c --use-cached-db Toggles if the script should download a fresh db dump or used the existing cached db.
+  -p --pass-cached-db If provided the script will download a fresh db dump from the environment.
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -428,8 +428,11 @@ rm -rf src/.docker/mysql/docker-entrypoint-initdb.d/*.sql
 
 
 #Check that there is actually a DB dump file available.
-if [[ "${arg_c}" = "1" ]]; then
-    local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
+if [[ "${arg_p}" = "1" ]]; then
+    info "Download a copy of ${arg_e} DB"
+    bin/cloud/get-db --source-environment ${arg_e}
+else
+   local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
     local files=($(find ${dumpPath}/ -maxdepth 1 -name "*.sql"))
     local count=${#files[@]}
     debug "Dump file path: ${dumpPath}"
@@ -442,9 +445,6 @@ if [[ "${arg_c}" = "1" ]]; then
       emergency "There should only be one dump file in ${dumpPath}"
     fi
     info "Using cached db dump"
-else
-    info "Download a copy of ${arg_e} DB"
-    bin/cloud/get-db --source-environment ${arg_e}
 fi
 
 info "Download the latest copy of the config.php file from ${arg_e}"
