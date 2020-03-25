@@ -401,6 +401,22 @@ fi
 ### Runtime
 ##############################################################################
 
+local urnFileName="misc.xml"
+local PROJECT_SRC=$(cd ${__dir}/../../src && pwd)
+local PROJECT_PATH=$(cd ${__dir}/../.. && pwd)
+local generatedFilePath=${PROJECT_SRC}/${urnFileName}
+
+debug "Source Path: ${PROJECT_SRC}"
+debug "Project Path: ${PROJECT_PATH}"
+
+notice "Initializing urn file"
+${__dir}/magento dev:urn-catalog:generate ${urnFileName}
+
+mv ${generatedFilePath} ${PROJECT_PATH}/.idea
+sed -i .bak -e 's/\$PROJECT_DIR\$/\$PROJECT_DIR\$\/src/g' ${PROJECT_PATH}/.idea/${urnFileName}
+
+notice "Done initializing urn file at ${PROJECT_PATH}/.idea/${urnFileName}"
+
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
