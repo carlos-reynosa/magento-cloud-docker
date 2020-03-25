@@ -475,7 +475,7 @@ info "Building compose file in ${arg_m} mode"
 bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
 info "Done building compose file in ${arg_m} mode"
 
-info "Download the latest copy of the env.php filegenerated/code/Magento/Braintree/Model/Adminhtml/System/Config/CountryCreditCard/Interceptor.php"
+info "Download the latest copy of the env.php from ${arg_e}"
 bin/cloud/get-env-file --environment ${arg_e}
 info "Done downloading ${arg_e} env.php file to app/etc/env.php"
 
