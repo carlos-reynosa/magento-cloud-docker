@@ -397,7 +397,7 @@ fi
 
 debug "Environment: ${arg_e}"
 debug "Mode: ${arg_m}"
-debug "Use cached db: ${arg_c}"
+debug "Use cached db: ${arg_p}"
 
 ##Setup Source Directory to Magento project files
 local RELATIVE_SRC_PATH="../../src"
@@ -416,14 +416,15 @@ debug "Mode: ${arg_m}"
 
 notice "Creating a local environment from ${arg_e}"
 
-#Check that there is actually a DB dump file available.
-if [[ "${arg_p}" = "1" ]]; then
+  #Check that there is actually a DB dump file available.
+  if [[ "${arg_p}" = "1" ]]; then
     info "Downloading a copy of ${arg_e} DB"
     bin/cloud/get-db --source-environment ${arg_e}
-else
-   local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
-    local files=($(find ${dumpPath}/ -maxdepth 1 -name "*.sql"))
-    local count=${#files[@]}
+  else
+    local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
+    local allDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*.sql") )
+    local count=${#allDumpFiles[@]}
+
     debug "Dump file path: ${dumpPath}"
     debug "Dump file count: ${count}"
 
@@ -433,8 +434,16 @@ else
     if [[ ${count} > 1 ]]; then
       emergency "There should only be one dump file in ${dumpPath}"
     fi
+
+    local allEnvironmentDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*${arg_e}*.sql") )
+    local environmentDumpFileCount=${#allEnvironmentDumpFiles[@]}
+
+    if [[ ${environmentDumpFileCount} = 0 ]]; then
+      emergency "You must have at least one dump file with a file name containing the environment name '${arg_e}'."
+    fi
+
     info "Using cached db dump in ${dumpPath}"
-fi
+  fi
 
 notice "Cleaning local environment of old files and data"
 info "Cleaning local data"
