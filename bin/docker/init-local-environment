@@ -393,6 +393,10 @@ if [[ "${arg_h:?}" = "1" ]]; then
   help "Help using ${0}"
 fi
 
+##Setup Source Directory to Magento project files
+local RELATIVE_SRC_PATH="../../src"
+SRC_DIR=$(cd ${__dir}/${RELATIVE_SRC_PATH} && pwd || emergency "Source path does not exist: ${__dir}/${RELATIVE_SRC_PATH}")
+debug "Magento Source Directory: ${SRC_DIR}"
 
 ### Validation. Error out if the things required for your script are not present
 ##############################################################################
