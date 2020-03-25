@@ -141,7 +141,6 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -375,11 +374,7 @@ __b3bp_err_report() {
 
 # debug mode
 if [[ "${arg_d:?}" = "1" ]]; then
-  set -o xtrace
-  PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
   LOG_LEVEL="7"
-  # Enable error backtracing
-  trap '__b3bp_err_report "${FUNCNAME:-.}" ${LINENO}' ERR
 fi
 
 # verbose mode
