@@ -397,7 +397,7 @@ fi
 
 debug "Environment: ${arg_e}"
 debug "Mode: ${arg_m}"
-debug "Use cached db: ${arg_p}"
+debug "Bypass cache?: ${arg_p}"
 
 ##Setup Source Directory to Magento project files
 local RELATIVE_SRC_PATH="../../src"
@@ -416,12 +416,15 @@ debug "Mode: ${arg_m}"
 
 notice "Creating a local environment from ${arg_e}"
 
+  local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
+
   #Check that there is actually a DB dump file available.
   if [[ "${arg_p}" = "1" ]]; then
     info "Downloading a copy of ${arg_e} DB"
+    info "Clearing out old dump files in ${dumpPath}"
+    rm -rf  ${dumpPath}/*.sql
     bin/cloud/get-db --source-environment ${arg_e}
   else
-    local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
     local allDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*.sql") )
     local count=${#allDumpFiles[@]}
 
@@ -432,7 +435,7 @@ notice "Creating a local environment from ${arg_e}"
       emergency "No DB dump files in ${dumpPath}. A local environment cant be initialized using cached method. Use -p option to bypass the cache requirement."
     fi
     if [[ ${count} > 1 ]]; then
-      emergency "There should only be one dump file in ${dumpPath}"
+      error "There should only be one dump file in ${dumpPath}" && ls -lah ${dumpPath} && emergency "Too many dump files"
     fi
 
     local allEnvironmentDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*${arg_e}*.sql") )
@@ -446,61 +449,57 @@ notice "Creating a local environment from ${arg_e}"
   fi
 
 notice "Cleaning local environment of old files and data"
-info "Cleaning local data"
-info "Clear out all current docker containers and data"
-bin/docker/remove || warning "An error occured while removing all data containers"
-
-info "Cleaning up files"
-
-info "Removing docker configs"
-rm -f src/.docker/config.php && info "Removed docker config.php"
-rm -f src/docker-compose.override.yml && info "Removed docker compose override"
+  info "Cleaning local data"
+    info "Clear out all current docker containers and data"
+    bin/docker/remove || warning "An error occured while removing all data containers"
+  info "Cleaning up files"
+    info "Removing docker configs"
+    rm -f src/.docker/config.php && info "Removed docker config.php"
+    rm -f src/docker-compose.override.yml && info "Removed docker compose override"
+notice "Done cleaning local environment of old files and data"
 
 notice "Setting up local config files"
-info "Download the latest copy of the config.php file from ${arg_e}"
-bin/cloud/get-latest-config --environment ${arg_e}
+  info "Download the latest copy of the config.php file from ${arg_e}"
+  bin/cloud/get-latest-config --environment ${arg_e}
 
-info "Setting up compose override file"
-bin/docker/setup-docker-compose-override --mode ${arg_m}
-info "Done setting up compose override file"
+  info "Download the latest copy of the env.php from ${arg_e}"
+    bin/cloud/get-env-file --environment ${arg_e}
+  info "Done downloading ${arg_e} env.php file to app/etc/env.php"
 
-info "Setting up host ${arg_w} name"
-bin/docker/setup-hostname --mode ${arg_m} --new-domain ${arg_w}
-info "Done setting up host ${arg_w} name"
+  info "Setting up compose override file"
+    bin/docker/setup-docker-compose-override --mode ${arg_m}
+  info "Done setting up compose override file"
 
-info "Building compose file in ${arg_m} mode"
-bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
-info "Done building compose file in ${arg_m} mode"
+  info "Setting up host ${arg_w} name"
+    bin/docker/setup-hostname --mode ${arg_m} --new-domain ${arg_w}
+  info "Done setting up host ${arg_w} name"
 
-info "Download the latest copy of the env.php from ${arg_e}"
-bin/cloud/get-env-file --environment ${arg_e}
-info "Done downloading ${arg_e} env.php file to app/etc/env.php"
-
+  info "Building compose file in ${arg_m} mode"
+    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
+  info "Done building compose file in ${arg_m} mode"
 notice "Done setting up local config files"
 
 notice "Starting local environment init process"
-info "Running initial ${arg_m} deployment"
-bin/docker/deploy --mode ${arg_m}
-info "Finished initial ${arg_m} deployment"
+  info "Running initial ${arg_m} deployment"
+    bin/docker/deploy --mode ${arg_m}
+  info "Finished initial ${arg_m} deployment"
 
-info "Manually starting containers to make sure they're running"
-bin/docker/start
-info "Done starting containers"
+  info "Manually starting containers to make sure they're running"
+    bin/docker/start
+  info "Done starting containers"
 
-info "Running a full reindex"
-bin/docker/magento indexer:reindex
-bin/docker/magento indexer:reindex catalogsearch_fulltext
-info "Done reindexing"
+  info "Running a full reindex"
+    bin/docker/magento indexer:reindex
+    bin/docker/magento indexer:reindex catalogsearch_fulltext
+  info "Done reindexing"
 
-info "Flushing the cache"
-bin/docker/magento cache:flush
-info "Done flushing cache"
-
+  info "Flushing the cache"
+    bin/docker/magento cache:flush
+  info "Done flushing cache"
 notice "Done local environment init process"
 
 debug "Environment: ${arg_e}"
 debug "Mode: ${arg_m}"
-
 notice "Done Creating a local environment from ${arg_e}"
 }
 
