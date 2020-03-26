@@ -418,12 +418,14 @@ notice "Creating a local environment from ${arg_e}"
 
   local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
 
+  info "Starting DB setup process"
   #Check that there is actually a DB dump file available.
   if [[ "${arg_p}" = "1" ]]; then
-    info "Downloading a copy of ${arg_e} DB"
-    info "Clearing out old dump files in ${dumpPath}"
-    rm -rf  ${dumpPath}/*.sql
-    bin/cloud/get-db --source-environment ${arg_e}
+    notice "Getting a fresh copy of the ${arg_e} DB"
+      info "Clearing out old dump files in ${dumpPath}"
+      rm -rf  ${dumpPath}/*.sql
+      bin/cloud/get-db --source-environment ${arg_e}
+    notice "Done getting a fresh copy of the ${arg_e} DB"
   else
     local allDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*.sql") )
     local count=${#allDumpFiles[@]}
@@ -444,9 +446,9 @@ notice "Creating a local environment from ${arg_e}"
     if [[ ${environmentDumpFileCount} = 0 ]]; then
       emergency "You must have at least one dump file with a file name containing the environment name '${arg_e}'. Use -p option to bypass the cache requirement."
     fi
-
     info "Using cached db dump in ${dumpPath}"
   fi
+  notice "Done starting DB setup process"
 
 notice "Cleaning local environment of old files and data"
   info "Cleaning local data"
