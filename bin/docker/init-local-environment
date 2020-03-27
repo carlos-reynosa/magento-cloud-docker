@@ -459,6 +459,7 @@ notice "Creating a local environment from ${arg_e}"
       rm -f src/.docker/config.php && info "Removed docker config.php"
       rm -f src/docker-compose.override.yml && info "Removed docker compose override"
       rm -f src/docker-compose.yml && info "Removed docker compose"
+      rm -f src/app/etc/env.php && info "Removed env.php"
   notice "Done cleaning local environment of old files and data"
 
   notice "Setting up local config files"
