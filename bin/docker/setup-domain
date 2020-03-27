@@ -16,7 +16,7 @@
 # You are not obligated to bundle the LICENSE file with your b3bp projects as long
 # as you leave these references intact in the header comments of your source files.
 
-function setup_hostname () {
+function setup-domain () {
 
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -404,35 +404,34 @@ fi
 
 ### Runtime
 ##############################################################################
+  notice "Starting custom domain setup using ${arg_w}"
 
-notice "Starting custom domain setup using ${arg_w}"
+    info "Initializing new docker config file"
+      ${__dir}/setup-docker-config
 
-info "Initializing new docker config file"
-${__dir}/setup-docker-config
+    info "Updating docker config hostname"
+      sed -i -e "s/http:\/\/${arg_o}\//http:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up http hostname in config.php file"
+      sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up https hostname in config.php file"
 
-info "Updating docker config hostname"
-sed -i -e "s/http:\/\/${arg_o}\//http:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up http hostname in config.php file"
-sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up https hostname in config.php file"
+    info "Initialize docker override file to setup new hostname"
+      ${__dir}/setup-docker-compose-override --mode ${arg_m}
 
-info "Initialize docker override file to setup new hostname"
-${__dir}/setup-docker-compose-override --mode ${arg_m}
+    info "Updating domain in docker compose file"
+      sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.yml
 
-info "Updating domain in docker compose file"
-sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.yml
+    info "Updating domain in docker composer override file"
+      sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.override.yml
 
-info "Updating domain in docker composer override file"
-sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.override.yml
+    info "Adding new domain ${arg_w} to hosts file"
+      ${__dir}/local-hosts-manager -o ${arg_w} || warning "There was an issue while adding ${arg_w} to the host file."
 
-info "Adding new domain ${arg_w} to hosts file"
-echo "127.0.0.1 ::1 ${arg_w}" | sudo tee -a /etc/hosts
-
-notice "Done starting custom domain setup using ${arg_w}"
+  notice "Done starting custom domain setup using ${arg_w}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  export -f setup_hostname
+  export -f setup-domain
 else
-  setup_hostname "${@}"
+  setup-domain "${@}"
   exit ${?}
 fi
 
