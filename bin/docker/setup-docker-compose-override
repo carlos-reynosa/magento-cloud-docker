@@ -402,7 +402,7 @@ fi
 ### Runtime
 ##############################################################################
 local dockerOverrideFilePath="src/docker-compose.override.yml"
-rm -rf ${dockerOverrideFilePath} && info "Removed out old override file"
+rm -rf ${dockerOverrideFilePath} && info "Removed previous composer override file"
 
 notice "Initializing docker compose override."
 if [[ "${arg_m:?}" = "developer" ]]; then
@@ -413,9 +413,8 @@ else
    || error "Error while trying to copy the override template in order to set up docker compose config hostname"
 fi
 
-notice "Done initializing docker compose override."
-notice "${dockerOverrideFilePath} was created or overridden."
-
+info "Using ${arg_m} override file template"
+notice "Done initializing docker ${arg_m} override file."
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
