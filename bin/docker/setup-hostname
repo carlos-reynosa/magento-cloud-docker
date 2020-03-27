@@ -405,20 +405,16 @@ fi
 ### Runtime
 ##############################################################################
 
-notice "1. Setup up src/.docker/config.php hostname."
-if [[ -s "src/.docker/config.php" ]]; then
-    info "Using existing docker config.php file."
-else
-    info "src/.docker/config.php file is missing. Using template. "
-    cp src/.docker/config.php.custom-dist  src/.docker/config.php
-fi
+notice "Starting custom domain setup using ${arg_w}"
 
-info "Updating docker config"
+info "Initializing new docker config file"
+${__dir}/setup-docker-config
+
+info "Updating docker config hostname"
 sed -i -e "s/http:\/\/${arg_o}\//http:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up http hostname in config.php file"
 sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up https hostname in config.php file"
 
-notice "2. Setup up hostname in docker compose config"
-
+info "Initialize docker override file to setup new hostname"
 ${__dir}/setup-docker-compose-override --mode ${arg_m}
 
 info "Updating domain in docker compose file"
@@ -427,9 +423,10 @@ sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.y
 info "Updating domain in docker composer override file"
 sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.override.yml
 
-notice "3. Adding new domain ${arg_w} to hosts file"
+info "Adding new domain ${arg_w} to hosts file"
 echo "127.0.0.1 ::1 ${arg_w}" | sudo tee -a /etc/hosts
 
+notice "Done starting custom domain setup using ${arg_w}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
