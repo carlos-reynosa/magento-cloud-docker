@@ -435,6 +435,8 @@ elif [[ "${arg_m:?}" = "production" ]]; then
     #@see https://devdocs.magento.com/cloud/docker/docker-mode-production.html
     notice "Running production deployment process on docker instance"
 
+    docker-compose up -d
+
     info "Running build process..."
     docker-compose run build cloud-build
 
