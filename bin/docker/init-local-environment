@@ -475,7 +475,7 @@ notice "Creating a local environment from ${arg_e}"
     info "Done building compose file in ${arg_m} mode"
 
     info "Setting up host ${arg_w} name"
-      bin/docker/setup-hostname --mode ${arg_m} --new-domain ${arg_w}
+      bin/docker/setup-domain --mode ${arg_m} --new-domain ${arg_w}
     info "Done setting up host ${arg_w} name"
 
     info "Building compose file in ${arg_m} mode"
