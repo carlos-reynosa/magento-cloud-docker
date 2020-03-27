@@ -458,19 +458,20 @@ notice "Creating a local environment from ${arg_e}"
       info "Removing docker configs"
       rm -f src/.docker/config.php && info "Removed docker config.php"
       rm -f src/docker-compose.override.yml && info "Removed docker compose override"
+      rm -f src/docker-compose.yml && info "Removed docker compose"
   notice "Done cleaning local environment of old files and data"
 
   notice "Setting up local config files"
     info "Download the latest copy of the config.php file from ${arg_e}"
     bin/cloud/get-latest-config --environment ${arg_e}
 
-    info "Download the latest copy of the env.php from ${arg_e}"
-      bin/cloud/get-env-file --environment ${arg_e}
-    info "Done downloading ${arg_e} env.php file to app/etc/env.php"
-
     info "Setting up compose override file"
       bin/docker/setup-docker-compose-override --mode ${arg_m}
     info "Done setting up compose override file"
+
+    info "Building compose file in ${arg_m} mode. Needed for compose initialization."
+    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
+    info "Done building compose file in ${arg_m} mode"
 
     info "Setting up host ${arg_w} name"
       bin/docker/setup-hostname --mode ${arg_m} --new-domain ${arg_w}
