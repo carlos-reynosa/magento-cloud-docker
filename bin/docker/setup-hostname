@@ -410,7 +410,7 @@ if [[ -s "src/.docker/config.php" ]]; then
     info "Using existing docker config.php file."
 else
     info "src/.docker/config.php file is missing. Using template. "
-    cp src/.docker/config.php.dist  src/.docker/config.php
+    cp src/.docker/config.php.custom-dist  src/.docker/config.php
 fi
 
 info "Updating docker config"
