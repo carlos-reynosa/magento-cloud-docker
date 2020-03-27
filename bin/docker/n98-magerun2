@@ -1,2 +1,2 @@
 #!/bin/bash
-bin/cli bin/n98-magerun2.phar "$@"
+bin/docker/cli bin/n98-magerun2.phar "$@"
