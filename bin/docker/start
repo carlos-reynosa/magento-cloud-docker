@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd src  && docker-compose start
+cd src  && docker-compose up -d
 
