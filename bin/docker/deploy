@@ -430,6 +430,8 @@ if [[ "${arg_m:?}" = "developer" ]]; then
     info "Restart services"
     docker-compose restart
 
+  notice "Done running developer deployment process..."
+
 elif [[ "${arg_m:?}" = "production" ]]; then
 
     #@see https://devdocs.magento.com/cloud/docker/docker-mode-production.html
@@ -455,6 +457,7 @@ elif [[ "${arg_m:?}" = "production" ]]; then
     docker-compose restart
     docker-compose up -d
 
+  notice "Done running production deployment process on docker instance"
 else
 
 critical "None of the modes provided are valid. Could not run deployment process for ${arg_m}"
