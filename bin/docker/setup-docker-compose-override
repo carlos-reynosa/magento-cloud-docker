@@ -143,6 +143,7 @@ function help () {
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -m --mode [arg] developer or production. Required. Default="production"
+  -s --sync-mode [arg] Sync override template to use: native, magento-sync, mutagen. Required. Default="native"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -404,17 +405,22 @@ fi
 local dockerOverrideFilePath="src/docker-compose.override.yml"
 rm -rf ${dockerOverrideFilePath} && info "Removed previous composer override file"
 
-notice "Initializing docker compose override."
+notice "Initializing docker compose override in ${arg_m} mode with ${arg_s} syncing."
+
+local syncModeFileNameModifier=""
+
+#Only in developer mode are sync volumes relevant at all
 if [[ "${arg_m:?}" = "developer" ]]; then
-  cp templates/docker-compose.override.yml.developer.dist  ${dockerOverrideFilePath} \
-   || error "Error while trying to copy the override template in order to set up docker compose config hostname"
-else
-  cp templates/docker-compose.override.yml.production.dist  ${dockerOverrideFilePath} \
-   || error "Error while trying to copy the override template in order to set up docker compose config hostname"
+  syncModeFileNameModifier=".${arg_s}"
 fi
 
-info "Using ${arg_m} override file template"
-notice "Done initializing docker ${arg_m} override file."
+local dockerOverrideTemplateFilePath="templates/docker-compose.override.yml.${arg_m}${syncModeFileNameModifier}.dist"
+[[ -s "${dockerOverrideTemplateFilePath:-}" ]] ||  emergency "Override template file ${dockerOverrideTemplateFilePath} does not exist"
+
+cp ${dockerOverrideTemplateFilePath}  ${dockerOverrideFilePath} \
+ || error "Error while trying to copy the override template in order to set up docker compose config hostname"
+
+notice "Done initializing docker compose override in ${arg_m} mode with ${arg_s} syncing."
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then

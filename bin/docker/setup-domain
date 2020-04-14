@@ -145,6 +145,7 @@ function help () {
   -o --old-domain [arg] Old domain. Required. Default="magento2.docker"
   -w --new-domain [arg] Old domain. Required. Default="mclocal.pdp.com"
   -m --mode [arg] development or production. Required. Default="production"
+  -s --sync-mode [arg] Sync override template to use: native, magento-sync, mutagen. Required. Default="native"
   -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
@@ -414,7 +415,7 @@ fi
       sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up https hostname in config.php file"
 
     info "Initialize docker override file to setup new hostname"
-      ${__dir}/setup-docker-compose-override --mode ${arg_m}
+      ${__dir}/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
 
     info "Updating domain in docker compose file"
       sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.yml

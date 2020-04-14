@@ -145,6 +145,7 @@ function help () {
   -m --mode [arg] Mode in which to initialize the local environment in: production, developer. Required. Default="production"
   -p --pass-cached-db If provided the script will download a fresh db dump from the environment.
   -w --domain [arg] Domain name to initialize the local website with. Required. Default="mclocal.pdp.com"
+  -s --sync-mode [arg] Docker sync strategy to use: native, docker-sync, mutagen. Required. Default="native"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -462,35 +463,29 @@ notice "Creating a local environment from ${arg_e}"
       rm -f src/app/etc/env.php && info "Removed env.php"
   notice "Done cleaning local environment of old files and data"
 
+
   notice "Setting up local config files"
-    info "Download the latest copy of the config.php file from ${arg_e}"
     bin/cloud/get-latest-config --environment ${arg_e}
 
-    info "Setting up compose override file"
-      bin/docker/setup-docker-compose-override --mode ${arg_m}
-    info "Done setting up compose override file"
 
-    info "Building compose file in ${arg_m} mode. Needed for compose initialization."
-    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
-    info "Done building compose file in ${arg_m} mode"
+      bin/docker/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
 
-    info "Setting up host ${arg_w} name"
-      bin/docker/setup-domain --mode ${arg_m} --new-domain ${arg_w}
-    info "Done setting up host ${arg_w} name"
+    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
 
-    info "Building compose file in ${arg_m} mode"
-      bin/docker/build-compose --environment ${arg_e} --mode ${arg_m}
-    info "Done building compose file in ${arg_m} mode"
+
+      bin/docker/setup-domain --mode ${arg_m} --new-domain ${arg_w} --sync-mode ${arg_s}
+
+      bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
   notice "Done setting up local config files"
 
-  notice "Starting local environment init process"
-    info "Running initial ${arg_m} deployment"
-      bin/docker/deploy --mode ${arg_m}
-    info "Finished initial ${arg_m} deployment"
 
-    info "Manually starting containers to make sure they're running"
-      bin/docker/start
-    info "Done starting containers"
+  notice "Setting up docker container files"
+    bin/docker/sync-start --sync-mode ${arg_s}
+  notice "Done setting up docker container files"
+  notice "Starting local environment init process"
+    bin/docker/deploy --mode ${arg_m}
+
+    bin/docker/start
 
     info "Running a full reindex"
       bin/docker/magento indexer:reindex
