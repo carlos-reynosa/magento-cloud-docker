@@ -452,36 +452,31 @@ notice "Creating a local environment from ${arg_e}"
   notice "Done starting DB setup process"
 
   notice "Cleaning local environment of old files and data"
-    info "Cleaning local data"
-      info "Clear out all current docker containers and data"
-      bin/docker/remove || warning "An error occured while removing all data containers"
-    info "Cleaning up files"
-      info "Removing docker configs"
-      rm -f src/.docker/config.php && info "Removed docker config.php"
-      rm -f src/docker-compose.override.yml && info "Removed docker compose override"
-      rm -f src/docker-compose.yml && info "Removed docker compose"
-      rm -f src/app/etc/env.php && info "Removed env.php"
-  notice "Done cleaning local environment of old files and data"
+    bin/docker/remove || warning "An error occured while removing all data containers"
 
+    info "Removing docker configs"
+    rm -f src/.docker/config.php && info "Removed docker config.php"
+    rm -f src/docker-compose.override.yml && info "Removed docker compose override"
+    rm -f src/docker-compose.yml && info "Removed docker compose file"
+    rm -f src/app/etc/env.php && info "Removed env.php"
+  notice "Done cleaning local environment of old files and data"
 
   notice "Setting up local config files"
     bin/cloud/get-latest-config --environment ${arg_e}
 
-
-      bin/docker/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
+    bin/docker/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
 
     bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
 
+    bin/docker/setup-domain --mode ${arg_m} --new-domain ${arg_w} --sync-mode ${arg_s}
 
-      bin/docker/setup-domain --mode ${arg_m} --new-domain ${arg_w} --sync-mode ${arg_s}
-
-      bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
+    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
   notice "Done setting up local config files"
-
 
   notice "Setting up docker container files"
     bin/docker/sync-start --sync-mode ${arg_s}
   notice "Done setting up docker container files"
+
   notice "Starting local environment init process"
     bin/docker/deploy --mode ${arg_m}
 
