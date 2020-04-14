@@ -407,14 +407,12 @@ fi
 ##############################################################################
   notice "Starting custom domain setup using ${arg_w}"
 
-    info "Initializing new docker config file"
       ${__dir}/setup-docker-config
 
     info "Updating docker config hostname"
       sed -i -e "s/http:\/\/${arg_o}\//http:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up http hostname in config.php file"
       sed -i -e "s/https:\/\/${arg_o}\//https:\/\/${arg_w}\//g" src/.docker/config.php || error "Error while trying to set up https hostname in config.php file"
 
-    info "Initialize docker override file to setup new hostname"
       ${__dir}/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
 
     info "Updating domain in docker compose file"
@@ -423,7 +421,6 @@ fi
     info "Updating domain in docker composer override file"
       sed -i -e "s/VIRTUAL_HOST=${arg_o}/VIRTUAL_HOST=${arg_w}/g" src/docker-compose.override.yml
 
-    info "Adding new domain ${arg_w} to hosts file"
       ${__dir}/local-hosts-manager -o ${arg_w} || warning "There was an issue while adding ${arg_w} to the host file."
 
   notice "Done starting custom domain setup using ${arg_w}"
