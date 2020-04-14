@@ -411,7 +411,9 @@ local syncModeFileNameModifier=""
 
 #Only in developer mode are sync volumes relevant at all
 if [[ "${arg_m:?}" = "developer" ]]; then
-  syncModeFileNameModifier=".${arg_s}"
+  #only use arg_s if custom override is needed for mutagen
+  local modifier="docker-sync"
+  syncModeFileNameModifier=".${modifier}"
 fi
 
 local dockerOverrideTemplateFilePath="templates/docker-compose.override.yml.${arg_m}${syncModeFileNameModifier}.dist"
