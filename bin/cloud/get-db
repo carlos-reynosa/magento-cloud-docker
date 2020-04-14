@@ -398,15 +398,14 @@ fi
 
 [[ "${LOG_LEVEL:-}" ]] || emergency "Cannot continue without LOG_LEVEL. "
 
-### Runtime
-##############################################################################
-
-if [[ -n "${arg_e:-}" ]]; then
+if [[ "${arg_e:-}" ]]; then
   local environment="${arg_e}"
 else
-  notice "Using current source environment: $( cd src && git rev-parse --abbrev-ref HEAD)"
-  local environment=$( cd src && git rev-parse --abbrev-ref HEAD)
+ help "You must provide an environment from where to get the database from."
 fi
+
+### Runtime
+##############################################################################
 
 local fileDir=.docker/mysql/docker-entrypoint-initdb.d
 local fileName="environment-db-${environment}.sql"
