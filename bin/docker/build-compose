@@ -410,8 +410,7 @@ fi
 
 cd src || notice "Changing into source directory to run composer command"
 
-info "Generating docker compose config in ${arg_m} mode..."
-info "Generating docker compose config with ${arg_s} syncing..."
+info "Generating docker compose config in ${arg_m} mode with ${arg_s} syncing"
 
 if [[ "${arg_m}" = "developer" ]]; then
 
