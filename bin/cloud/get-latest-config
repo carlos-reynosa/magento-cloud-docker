@@ -436,13 +436,18 @@ debug "Destination Option: ${environmentOption}"
 
 ### Runtime
 ##############################################################################
+
+notice "Syncing up local config.php configuration with ${environment}"
 info "Generating latest config.php file on ${environment}"
 magento-cloud ssh ${projectOption} ${environmentOption} "vendor/bin/ece-tools config:dump"
-info "Done generating config"
+info "Done generating latest config.php file on ${environment}"
+
+rm -rf src/app/etc/config.php && info "Removed existing config.php"
 
 info "Downloading config.php from ${environment} to local src/app/etc/config.php"
 magento-cloud ssh ${projectOption} ${environmentOption} "cat app/etc/config.php" > src/app/etc/config.php
 
+notice "Done syncing up local config.php configuration with ${environment}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
