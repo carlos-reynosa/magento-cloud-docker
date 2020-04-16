@@ -141,7 +141,7 @@ function FUNCTION_NAME () {
 
     # shellcheck disable=SC2015
     [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -s --sync-mode Docker sync strategy to use: native, docker-sync, mutagen. Required. Default="native"
+  -s --sync-mode [arg] Docker sync strategy to use: native, docker-sync, mutagen. Required. Default="native"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -415,8 +415,18 @@ EOF
         info "Starting docker sync"
         docker-sync start
         info "Done Syncing"
-    else
-        info "${arg_s} does not require a separate manual sync process."
+    fi
+
+    if [[ "${arg_s}" = "mutagen" ]]; then
+        notice "Creating mutagen sync files"
+        info "Clearing out previous mutagen sessions"
+        cd ${SRC_DIR} &&  mutagen sync terminate --label-selector magento-docker
+        info "Creating new mutagen session"
+        cd ${SRC_DIR} && ./mutagen.sh
+        info "Forcing mutagen sync to watch progress"
+        cd ${SRC_DIR} && mutagen sync flush --label-selector magento-docker
+
+        notice "Done reating mutagen sync files"
     fi
 
     notice "Done with sync process"
