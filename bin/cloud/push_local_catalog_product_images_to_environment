@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd src
+magento-cloud mount:upload --include=pub/media/catalog/product -m pub/media

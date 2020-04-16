@@ -473,6 +473,12 @@ notice "Creating a local environment from ${arg_e}"
     bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
   notice "Done setting up local config files"
 
+  #mutagen requires creating the containers before syncing
+  #@see https://devdocs.magento.com/cloud/docker/docker-mode-developer.html
+  if [[ ${arg_s} = "mutagen" ]]; then
+    bin/docker/start
+  fi
+
   notice "Setting up docker container files"
     bin/docker/sync-start --sync-mode ${arg_s}
   notice "Done setting up docker container files"
