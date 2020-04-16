@@ -453,8 +453,6 @@ notice "Creating a local environment from ${arg_e}"
 
   notice "Cleaning local environment of old files and data"
     bin/docker/remove || warning "An error occured while removing all data containers"
-
-    info "Removing docker configs"
     rm -f src/.docker/config.php && info "Removed docker config.php"
     rm -f src/docker-compose.override.yml && info "Removed docker compose override"
     rm -f src/docker-compose.yml && info "Removed docker compose file"
@@ -473,15 +471,11 @@ notice "Creating a local environment from ${arg_e}"
     bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
   notice "Done setting up local config files"
 
-  #mutagen requires creating the containers before syncing
-  #@see https://devdocs.magento.com/cloud/docker/docker-mode-developer.html
-  if [[ ${arg_s} = "mutagen" ]]; then
-    bin/docker/start
+  if [[ "${arg_m}" = "developer" ]]; then
+    notice "Setting up docker container files"
+      bin/docker/sync-start --sync-mode ${arg_s}
+    notice "Done setting up docker container files"
   fi
-
-  notice "Setting up docker container files"
-    bin/docker/sync-start --sync-mode ${arg_s}
-  notice "Done setting up docker container files"
 
   notice "Starting local environment init process"
     bin/docker/deploy --mode ${arg_m}
