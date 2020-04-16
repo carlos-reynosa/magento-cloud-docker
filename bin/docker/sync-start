@@ -413,11 +413,17 @@ EOF
     if [[ "${arg_s}" = "docker-sync" ]]; then
         cd ${SRC_DIR}
         info "Starting docker sync"
+        docker-sync clean
         docker-sync start
         info "Done Syncing"
     fi
 
     if [[ "${arg_s}" = "mutagen" ]]; then
+        #mutagen requires creating the containers before syncing
+        #@see https://devdocs.magento.com/cloud/docker/docker-mode-developer.html
+        if [[ ${arg_s} = "mutagen" ]]; then
+          bin/docker/start
+        fi
         notice "Creating mutagen sync files"
         info "Clearing out previous mutagen sessions"
         cd ${SRC_DIR} &&  mutagen sync terminate --label-selector magento-docker
