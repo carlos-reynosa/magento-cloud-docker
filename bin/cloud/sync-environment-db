@@ -482,26 +482,27 @@ fi
   #Create source dump file
   rm ${fileName} > /dev/null 2>&1  && info "Removed previous dump file ${fileName}" || info "No previous dump file to remove"
 
-  notice "Dumping source database to local file: ${fileName}"
+  info "Dumping source database to local file: ${fileName}"
   magento-cloud db:dump  ${sourceOption} ${projectOption}  -r  database --stdout \
     | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | gzip | pv -W  > ${fileName}
 
 
   #Import source dump file into destination environment
-  notice "Import database dump ${fileName} into ${destinationEnvironment} "
+  info "Import database dump ${fileName} into ${destinationEnvironment} "
   pv "${fileName}" | zcat  | magento-cloud sql  -r database  ${destinationOption} ${projectOption}
 
   ${__dir}/force-full-redeploy -e ${destinationEnvironment}
   ${__dir}/full-reindex -e ${destinationEnvironment}
 
-  notice "Creating dev admin account"
+  info "Creating dev admin account"
   magento-cloud ssh ${destinationOption} ${projectOption} \
     'bin/magento admin:user:create -v --admin-user=admin --admin-password=admin123 --admin-email=admin@admintest123.com --admin-firstname=admin --admin-lastname=admin' || emergency "Failed to create admin user"
 
   rm ${fileName} > /dev/null 2>&1  && notice "Cleaned dump file ${fileName}" || notice "No dump file to clean."
 
-  notice "Visit site: $(magento-cloud url --pipe --primary ${destinationOption} ${projectOption})"
+  info "Visit site: $(magento-cloud url --pipe --primary ${destinationOption} ${projectOption})"
 
+  notice "Done cloning ${sourceEnvironment} DB  into ${destinationEnvironment}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
