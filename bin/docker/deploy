@@ -407,6 +407,10 @@ if [[ "${arg_m:?}" = "developer" ]]; then
 
     #Install magento in environment
     notice "Running developer deployment process..."
+
+    info "Ensuring containers are running"
+    docker-compose up -d
+
     info "Running cloud deploy process"
     docker-compose run deploy cloud-deploy
 
