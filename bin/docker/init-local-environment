@@ -487,9 +487,9 @@ notice "Creating a local environment from ${arg_e}"
       bin/docker/magento indexer:reindex catalogsearch_fulltext
     info "Done reindexing"
 
-    info "Flushing the cache"
-      bin/docker/magento cache:flush
-    info "Done flushing cache"
+    bin/docker/magento cache:enable && info "Manually enabled all caches"
+
+    bin/docker/magento cache:flush && info "Flushing the cache"
   notice "Done local environment init process"
 
   debug "Environment: ${arg_e}"
