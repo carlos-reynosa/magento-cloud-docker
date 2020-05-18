@@ -426,6 +426,7 @@ if [[ "${arg_m:?}" = "developer" ]]; then
     info "Set app to use varnish caching"
     docker-compose run deploy magento-command config:set system/full_page_cache/caching_application 2 --lock-env
     docker-compose run deploy magento-command setup:config:set --http-cache-hosts=varnish
+    docker-compose run deploy magento-command  cache:enable
 
     #clear cache
     info "Flushing magento cache"
