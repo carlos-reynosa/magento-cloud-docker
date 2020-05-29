@@ -4,6 +4,9 @@ services:
     volumes:
       - 'magento-db:/var/lib/mysql:delegated'
       - '.docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:delegated'
+  build:
+      networks:
+        - magento
   varnish:
     environment:
       - VIRTUAL_HOST=magento2.docker

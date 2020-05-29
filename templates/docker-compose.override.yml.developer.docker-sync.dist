@@ -3,3 +3,6 @@ services:
   varnish:
     environment:
       - VIRTUAL_HOST=magento2.docker
+  build:
+      networks:
+        - magento
