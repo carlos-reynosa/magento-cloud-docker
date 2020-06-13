@@ -143,8 +143,8 @@ function help () {
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -o --old-domain [arg] Old domain. Required. Default="magento2.docker"
-  -w --new-domain [arg] Old domain. Required. Default="mclocal.pdp.com"
-  -m --mode [arg] development or production. Required. Default="production"
+  -w --new-domain [arg] Old domain. Required. Default="mclocal.pdp.test"
+  -m --mode [arg] developer or production. Required. Default="developer"
   -s --sync-mode [arg] Sync override template to use: native, magento-sync, mutagen. Required. Default="native"
   -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
   -v               Enable verbose mode, print script as it is executed
