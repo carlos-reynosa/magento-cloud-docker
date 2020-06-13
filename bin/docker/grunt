@@ -1,2 +1,2 @@
 #!/bin/bash
-cd src && docker-compose run -T --rm -p 35729:35729 build grunt "$@"
+cd src && docker-compose run -T --rm -p 35729:35729 deploy grunt "$@"
