@@ -141,8 +141,8 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -e --environment [arg] Environment from which to create a local site from. Required. Default="integration"
-  -m --mode [arg] Mode in which to initialize the local environment in: production, developer. Required. Default="production"
+  -e --environment [arg] Environment from which to create a local site from. If non is provided the current branch in src will be used.
+  -m --mode [arg] Mode in which to initialize the local environment in: production, developer. Required. Default="developer"
   -p --pass-cached-db If provided the script will download a fresh db dump from the environment.
   -w --domain [arg] Domain name to initialize the local website with. Required. Default="mclocal.pdp.test"
   -s --sync-mode [arg] Docker sync strategy to use: native, docker-sync, mutagen. Required. Default="native"
@@ -396,8 +396,6 @@ if [[ "${arg_h:?}" = "1" ]]; then
   help "Help using ${0}"
 fi
 
-debug "Environment: ${arg_e}"
-debug "Mode: ${arg_m}"
 debug "Bypass cache?: ${arg_p}"
 
 ##Setup Source Directory to Magento project files
@@ -412,21 +410,27 @@ debug "Magento Source Directory: ${SRC_DIR}"
 
 ### Runtime
 ##############################################################################
-debug "Environment: ${arg_e}"
+  if [[ -z "${arg_e}" ]]; then
+    local environment=$( cd src && git rev-parse --abbrev-ref HEAD)
+  else
+    local environment=${arg_e}
+  fi
+
+debug "Environment: ${environment}"
 debug "Mode: ${arg_m}"
 
-notice "Creating a local environment from ${arg_e}"
+notice "Creating a local environment from ${environment}"
 
   local dumpPath="${SRC_DIR}/.docker/mysql/docker-entrypoint-initdb.d"
 
   info "Starting DB setup process"
   #Check that there is actually a DB dump file available.
   if [[ "${arg_p}" = "1" ]]; then
-    notice "Getting a fresh copy of the ${arg_e} DB"
+    notice "Getting a fresh copy of the ${environment} DB"
       info "Clearing out old dump files in ${dumpPath}"
       rm -rf  ${dumpPath}/*.sql
-      bin/cloud/get-db --source-environment ${arg_e}
-    notice "Done getting a fresh copy of the ${arg_e} DB"
+      bin/cloud/get-db --source-environment ${environment}
+    notice "Done getting a fresh copy of the ${environment} DB"
   else
     local allDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*.sql") )
     local count=${#allDumpFiles[@]}
@@ -441,11 +445,11 @@ notice "Creating a local environment from ${arg_e}"
       error "There should only be one dump file in ${dumpPath}" && ls -lah ${dumpPath} && emergency "Too many dump files"
     fi
 
-    local allEnvironmentDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*${arg_e}*.sql") )
+    local allEnvironmentDumpFiles=( $(find ${dumpPath}/ -maxdepth 1 -name "*${environment}*.sql") )
     local environmentDumpFileCount=${#allEnvironmentDumpFiles[@]}
 
     if [[ ${environmentDumpFileCount} = 0 ]]; then
-      emergency "You must have at least one dump file with a file name containing the environment name '${arg_e}'. Use -p option to bypass the cache requirement."
+      emergency "You must have at least one dump file with a file name containing the environment name '${environment}'. Use -p option to bypass the cache requirement."
     fi
     info "Using cached db dump in ${dumpPath}"
   fi
@@ -460,15 +464,15 @@ notice "Creating a local environment from ${arg_e}"
   notice "Done cleaning local environment of old files and data"
 
   notice "Setting up local config files"
-    bin/cloud/get-latest-config --environment ${arg_e}
+    bin/cloud/get-latest-config --environment ${environment}
 
     bin/docker/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
 
-    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
+    bin/docker/build-compose --environment ${environment} --mode ${arg_m} --sync-mode ${arg_s}
 
     bin/docker/setup-domain --mode ${arg_m} --new-domain ${arg_w} --sync-mode ${arg_s}
 
-    bin/docker/build-compose --environment ${arg_e} --mode ${arg_m} --sync-mode ${arg_s}
+    bin/docker/build-compose --environment ${environment} --mode ${arg_m} --sync-mode ${arg_s}
   notice "Done setting up local config files"
 
   if [[ "${arg_m}" = "developer" ]]; then
@@ -492,9 +496,9 @@ notice "Creating a local environment from ${arg_e}"
     bin/docker/magento cache:flush && info "Flushing the cache"
   notice "Done local environment init process"
 
-  debug "Environment: ${arg_e}"
+  debug "Environment: ${environment}"
   debug "Mode: ${arg_m}"
-  notice "Done Creating a local environment from ${arg_e}"
+  notice "Done Creating a local environment from ${environment}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
