@@ -411,12 +411,15 @@ local fileDir=.docker/mysql/docker-entrypoint-initdb.d
 local fileName="environment-db-${environment}.sql"
 local filePath=${fileDir}/$fileName
 
+notice "Downloading DB dump from ${environment} to ${filePath}"
 info "Remove old file dumps in ${fileDir}/"
 rm -rf $fileDir/environment-db-*
 
-info "Downloading DB dump from ${environment} to ${filePath}"
+mkdir -p src/${fileDir}
 cd src  && magento-cloud db:dump --environment=${environment} -y -r database  --stdout | pv > "${filePath}"
 ls -lah ${filePath}
+notice "Downloading DB dump from ${environment} to ${filePath}"
+
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
