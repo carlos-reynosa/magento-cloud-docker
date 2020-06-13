@@ -141,6 +141,8 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
+  -m --mode {arg} Deployment mode used to build composer after toggling xdebug module. developer or production. Default="developer"
+  -s --sync-mode {arg} Sync mode to build the  docker compose file after toggling xdebug. native, docker-sync, or mutage. Default="native"
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -406,7 +408,22 @@ debug "Magento Source Directory: ${SRC_DIR}"
 
 ### Runtime
 ##############################################################################
+notice "Starting xdebug"
+  bin/docker/remove && info "Stopped and removed current containers"
+    info "Adding exdebug extension to magento app config."
 
+    if [[ -n "$(grep xdebug src/.magento.app.yaml)" ]]; then
+      warning "xdebug is already been added to the container build config"
+    else
+      sed -i -e "s/- sodium/- sodium\n        - xdebug/g" src/.magento.app.yaml  || error "Failed to setup xdebug php module in .magento.app.yaml."
+     fi
+
+    info "Building docker compose file with xdebug module"
+      bin/docker/build-compose --mode ${arg_m} --sync-mode ${arg_s} -v ${arg_v} --debug ${arg_d}
+    info "Updating docker composeer file xdebug config with correct remote host for linux"
+     sed -i -e "s/- XDEBUG_CONFIG=remote_host=host.docker.internal/- XDEBUG_CONFIG=remote_host=172.17.0.1/g" src/docker-compose.yml || error "Failed to setup xdebug host domain for linux connections."
+  bin/docker/start
+notice "Finished xdebug"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
