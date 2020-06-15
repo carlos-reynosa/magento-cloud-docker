@@ -146,6 +146,7 @@ function help () {
   -p --pass-cached-db If provided the script will download a fresh db dump from the environment.
   -w --domain [arg] Domain name to initialize the local website with. Required. Default="mclocal.pdp.test"
   -s --sync-mode [arg] Docker sync strategy to use: native, docker-sync, mutagen. Required. Default="native"
+  -c --skip-get-config Skip Generating and getting the config file of a remote environment.
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
@@ -464,7 +465,11 @@ notice "Creating a local environment from ${environment}"
   notice "Done cleaning local environment of old files and data"
 
   notice "Setting up local config files"
-    bin/cloud/get-latest-config --environment ${environment}
+    if [[ "${arg_c}" = "0" ]]; then
+      bin/cloud/get-latest-config --environment ${environment}
+    else
+      info "Skipping getting the latest config from ${environment}" && debug "Skip Config Flag:${arg_c}"
+    fi
 
     bin/docker/setup-docker-compose-override --mode ${arg_m} --sync-mode ${arg_s}
 
